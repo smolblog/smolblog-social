@@ -1,0 +1,30 @@
+{
+	"name": "smolblog/smolblog-social",
+	"description": "Connect WordPress to Twitter",
+	"version": "0.1.0",
+	"authors": [
+			{
+					"name": "Evan Hildreth",
+					"email": "me@eph.me",
+					"homepage": "http://eph.me",
+					"role": "Developer"
+			}
+	],
+	"repositories":[
+			{
+					"type": "vcs",
+					"url": "https://github.com/webdevstudios/oops-wp"
+			}
+	],
+	"require": {
+			"webdevstudios/oops-wp": "dev-feature/rest-api-support",
+			"j7mbo/twitter-api-php": "^1.0",
+			"abraham/twitteroauth": "^1.0",
+			"league/commonmark": "^0.18.1"
+	},
+	"autoload": {
+			"psr-4": {
+					"Smolblog\\Social\\": "src/"
+			}
+	}
+}
