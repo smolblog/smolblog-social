@@ -7,7 +7,7 @@
  * @package Smolblog\Social
  */
 
-namespace Smolblog\Social;
+namespace Smolblog\Social\Endpoint;
 
 use WebDevStudios\OopsWP\Structure\Service;
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;

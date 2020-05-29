@@ -59,17 +59,19 @@ class TwitterCallback extends ApiEndpoint {
 		if ( ! $request ) {
 			return;
 		}
-
-		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . get_current_blog_id() );
+		$current_user  = get_current_user_id();
+		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . $current_user );
 
 		if ( isset( $_REQUEST['oauth_token'] ) && $request_token['oauth_token'] !== $_REQUEST['oauth_token'] ) {
-			wp_die( 'OAuth tokens did not match; <a href="/wp-admin/admin.php/smolblog/oauth/init/twitter">try again</a>' );
+			wp_die( 'OAuth tokens did not match; <a href="' . get_rest_url( null, 'smolblog/v1/twitter/init' ) . '">try again</a>' );
 		}
 
-		$connection = new TwitterOAuth( SMOLBLOG_TWITTER_APPLICATION_KEY,
-																		SMOLBLOG_TWITTER_APPLICATION_SECRET,
-																		$request_token['oauth_token'],
-																		$request_token['oauth_token_secret'] );
+		$connection = new TwitterOAuth(
+			SMOLBLOG_TWITTER_APPLICATION_KEY,
+			SMOLBLOG_TWITTER_APPLICATION_SECRET,
+			$request_token['oauth_token'],
+			$request_token['oauth_token_secret']
+		);
 
 		$access_token = $connection->oauth( 'oauth/access_token', [ 'oauth_verifier' => $_REQUEST['oauth_verifier'] ] );
 
@@ -77,5 +79,6 @@ class TwitterCallback extends ApiEndpoint {
 		update_option( 'smolblog_twitter_username', $access_token['screen_name'], false );
 
 		header( 'Location: /wp-admin/admin.php?page=smolblog', true, 302 );
+		die;
 	}
 }
