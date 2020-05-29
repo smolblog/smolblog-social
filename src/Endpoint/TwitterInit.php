@@ -9,6 +9,8 @@
 namespace Smolblog\Social\Endpoint;
 
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
+use Abraham\TwitterOAuth\TwitterOAuth;
+use \WP_REST_Request;
 
 /**
  * Class to register our custom post types
