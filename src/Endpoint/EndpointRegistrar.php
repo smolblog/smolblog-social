@@ -27,6 +27,7 @@ class EndpointRegistrar extends Service {
 	 * @since 0.1.0
 	 */
 	protected $endpoints = [
+		TwitterInit::class,
 		TwitterCallback::class,
 	];
 
