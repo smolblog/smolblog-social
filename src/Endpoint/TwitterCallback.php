@@ -63,7 +63,7 @@ class TwitterCallback extends ApiEndpoint {
 		if ( ! $request ) {
 			return;
 		}
-		$current_user  = get_current_user_id();
+		$current_user  = get_current_user_id(); // TODO: This is not getting the logged in user!
 		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . $current_user );
 
 		if ( isset( $_REQUEST['oauth_token'] ) && $request_token['oauth_token'] !== $_REQUEST['oauth_token'] ) {
