@@ -44,21 +44,27 @@ class SmolblogMain implements Hookable {
 	 * Output the Smolblog dashboard page
 	 */
 	public function smolblog_dashboard() {
+		global $wpdb;
+
+		$table_name   = $wpdb->prefix . 'smolblog_social';
+		$all_accounts = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM $table_name", // WHERE user_id = %d", //phpcs:ignore
+				// get_current_user_id(),
+			)
+		);
 ?>
 		<h1>Smolblog</h1>
 
-		<?php if ( ! empty ( $_GET['smolblog_action'] ) && 'import_twitter' === $_GET['smolblog_action'] ) : ?>
-			<h2>Twitter import</h2>
-			<pre>
-			Not yet!
-			</pre>
-		<?php elseif ( get_option( 'smolblog_twitter_username' ) ) : ?>
-			<p>Authenticated with Twitter as <?php echo esc_html( get_option( 'smolblog_twitter_username' ) ); ?></p>
+		<h2>Connected social accounts:</h2>
 
-			<p><a href="?page=smolblog&amp;smolblog_action=import_twitter" class="button">Import latest 10 tweets</a>
-		<?php else : ?>
-			<p><a href="<?php echo get_rest_url( null, 'smolblog/v1/twitter/init' ); ?>" class="button">Sign in with Twitter</a></p>
-		<?php endif; ?>
+		<ul>
+		<?php foreach ( $all_accounts as $account ) : ?>
+			<li><strong>Twitter:</strong> <?php echo $account->social_username; ?></li>
+		<?php endforeach; ?>
+		</ul>
+
+		<p>Add new account: <a href="<?php echo get_rest_url( null, 'smolblog/v1/twitter/init' ); ?>" class="button">Sign in with Twitter</a></p>
 
 		<p>Twitter callback: <code><?php echo get_rest_url( null, 'smolblog/v1/twitter/callback' ); ?></code></p>
 <?php

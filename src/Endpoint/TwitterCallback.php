@@ -58,6 +58,8 @@ class TwitterCallback extends ApiEndpoint {
 	 * @return void used as control structure only.
 	 */
 	public function run( WP_REST_Request $request = null ) {
+		global $wpdb;
+
 		if ( ! $request ) {
 			return;
 		}
@@ -75,10 +77,19 @@ class TwitterCallback extends ApiEndpoint {
 			$request_token['oauth_token_secret']
 		);
 
-		$access_token = $connection->oauth( 'oauth/access_token', [ 'oauth_verifier' => $_REQUEST['oauth_verifier'] ] );
+		$access_info = $connection->oauth( 'oauth/access_token', [ 'oauth_verifier' => $_REQUEST['oauth_verifier'] ] );
 
-		update_option( 'smolblog_oauth_twitter', $access_token, false );
-		update_option( 'smolblog_twitter_username', $access_token['screen_name'], false );
+		$wpdb->insert(
+			$wpdb->prefix . 'smolblog_social',
+			[
+				'user_id'         => $current_user,
+				'social_id'       => $access_info['user_id'],
+				'social_username' => $access_info['screen_name'],
+				'oauth_token'     => $access_info['oauth_token'],
+				'oauth_secret'    => $access_info['oauth_token_secret'],
+			],
+			[ '%d', '%s', '%s', '%s', '%s' ],
+		);
 
 		header( 'Location: /wp-admin/admin.php?page=smolblog', true, 302 );
 		die;
