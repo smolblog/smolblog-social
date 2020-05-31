@@ -32,7 +32,7 @@ class SmolblogMain implements Hookable {
 		add_menu_page(
 			'Smolblog Dashboard',
 			'Smolblog',
-			'manage_options',
+			'read',
 			'smolblog',
 			[ $this, 'smolblog_dashboard' ],
 			'dashicons-controls-repeat',
@@ -49,8 +49,8 @@ class SmolblogMain implements Hookable {
 		$table_name   = $wpdb->prefix . 'smolblog_social';
 		$all_accounts = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM $table_name", // WHERE user_id = %d", //phpcs:ignore
-				// get_current_user_id(),
+				"SELECT * FROM $table_name WHERE user_id = %d", //phpcs:ignore
+				get_current_user_id(),
 			)
 		);
 ?>
@@ -64,7 +64,7 @@ class SmolblogMain implements Hookable {
 		<?php endforeach; ?>
 		</ul>
 
-		<p>Add new account: <a href="<?php echo get_rest_url( null, 'smolblog/v1/twitter/init' ); ?>" class="button">Sign in with Twitter</a></p>
+		<p>Add new account: <a href="<?php echo get_rest_url( null, 'smolblog/v1/twitter/init' ); ?>?_wpnonce=<?php echo wp_create_nonce( 'wp_rest' ); ?>" class="button">Sign in with Twitter</a></p>
 
 		<p>Twitter callback: <code><?php echo get_rest_url( null, 'smolblog/v1/twitter/callback' ); ?></code></p>
 <?php

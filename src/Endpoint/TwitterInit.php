@@ -44,8 +44,22 @@ class TwitterInit extends ApiEndpoint {
 	 */
 	protected function get_args() : array {
 		return [
-			'methods' => [ 'GET' ],
+			'methods'             => [ 'POST', 'GET' ],
+			'permission_callback' => [ $this, 'is_user_logged_in' ],
 		];
+	}
+
+	/**
+	 * Check if user is logged in; 'read' permissions are given
+	 * to Subscribers.
+	 *
+	 * @author Evan Hildreth <me@eph.me>
+	 * @since 0.1.0
+	 *
+	 * @return bool If current user has 'read' permissions.
+	 */
+	public function is_user_logged_in() {
+		return current_user_can( 'read' );
 	}
 
 	/**
@@ -63,7 +77,7 @@ class TwitterInit extends ApiEndpoint {
 		}
 
 		$current_user = get_current_user_id();
-		$callback_url = get_rest_url( null, 'smolblog/v1/twitter/callback' );
+		$callback_url = get_rest_url( null, 'smolblog/v1/twitter/callback' ) . '?_wpnonce=' . wp_create_nonce( 'wp_rest' );
 		$connection   = new TwitterOAuth( SMOLBLOG_TWITTER_APPLICATION_KEY, SMOLBLOG_TWITTER_APPLICATION_SECRET );
 
 		$request_token = $connection->oauth( 'oauth/request_token', array( 'oauth_callback' => $callback_url ) );

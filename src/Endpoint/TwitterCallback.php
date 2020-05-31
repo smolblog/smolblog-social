@@ -44,8 +44,22 @@ class TwitterCallback extends ApiEndpoint {
 	 */
 	protected function get_args() : array {
 		return [
-			'methods' => [ 'POST', 'GET' ],
+			'methods'             => [ 'POST', 'GET' ],
+			'permission_callback' => [ $this, 'is_user_logged_in' ],
 		];
+	}
+
+	/**
+	 * Check if user is logged in; 'read' permissions are given
+	 * to Subscribers.
+	 *
+	 * @author Evan Hildreth <me@eph.me>
+	 * @since 0.1.0
+	 *
+	 * @return bool If current user has 'read' permissions.
+	 */
+	public function is_user_logged_in() {
+		return current_user_can( 'read' );
 	}
 
 	/**
@@ -63,7 +77,7 @@ class TwitterCallback extends ApiEndpoint {
 		if ( ! $request ) {
 			return;
 		}
-		$current_user  = get_current_user_id(); // TODO: This is not getting the logged in user!
+		$current_user  = get_current_user_id();
 		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . $current_user );
 
 		if ( isset( $_REQUEST['oauth_token'] ) && $request_token['oauth_token'] !== $_REQUEST['oauth_token'] ) {
