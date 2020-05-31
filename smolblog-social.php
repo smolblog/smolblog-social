@@ -38,3 +38,8 @@ add_action( 'plugins_loaded', function() {
 		} );
 	}
 } );
+
+register_activation_hook( __FILE__, function() {
+	$db = new Database\Schema();
+	$db->create_social_table();
+} );

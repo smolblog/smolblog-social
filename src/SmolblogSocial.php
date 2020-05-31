@@ -1,4 +1,4 @@
-<?php
+<?php //phpcs:ignore Wordpress.Files.Filename
 /**
  * The main class file.
  *
@@ -38,24 +38,7 @@ class SmolblogSocial extends Plugin {
 	 * @since 0.1.0
 	 */
 	protected $services = [
+		Endpoint\EndpointRegistrar::class,
+		AdminPage\AdminPageRegistrar::class,
 	];
-
-	/**
-	 * Register this plugin's services.
-	 *
-	 * Note: in standard implementations, there's no need to declare this function inside of your main plugin file,
-	 * as it gets called automatically by the parent ServiceRegistrar class.
-	 *
-	 * That said, in your custom implementation, it's possible you might be using something like a Dependency Injection
-	 * container in order to create your Service classes. Those Services might have parameters in their constructors,
-	 * or there may just be something else necessary for you to process at the time the services get registered. As
-	 * such, the `register_services` method has protected visibility so you can define that customization here. We've
-	 * extended the method here primarily for demonstration purposes to let you know that it is possible.
-	 *
-	 * @author Evan Hildreth <me@eph.me>
-	 * @since  0.1.0
-	 */
-	protected function register_services() { // phpcs:ignore
-		parent::register_services();
-	}
 }
