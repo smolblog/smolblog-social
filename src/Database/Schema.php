@@ -35,16 +35,26 @@ class Schema {
 	public function create_social_table() {
 		global $wpdb;
 
-		$table_name      = $wpdb->prefix . 'smolblog_social';
-		$charset_collate = $wpdb->get_charset_collate();
+		$account_table_name = $wpdb->prefix . 'smolblog_social';
+		$blog_table_name    = $wpdb->prefix . 'smolblog_social_blog';
+		$charset_collate    = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE $account_table_name (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			social_id varchar(50) NOT NULL,
 			social_username varchar(50) NOT NULL,
 			oauth_token varchar(255) NOT NULL,
 			oauth_secret varchar(255) NOT NULL, 
+			PRIMARY KEY  (id)
+		) $charset_collate;
+		
+		CREATE TABLE $blog_table_name (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			blog_id bigint(20) NOT NULL,
+			account_id bigint(20) NOT NULL,
+			can_pull tinyint(1) NOT NULL,
+			can_push tinyint(1) NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
