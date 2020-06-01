@@ -46,13 +46,19 @@ class SmolblogMain implements Hookable {
 	public function smolblog_dashboard() {
 		global $wpdb;
 
+		$current_user = get_current_user_id();
 		$table_name   = $wpdb->prefix . 'smolblog_social';
 		$all_accounts = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM $table_name WHERE user_id = %d", //phpcs:ignore
-				get_current_user_id(),
+				$current_user,
 			)
 		);
+
+		$blog_social = get_option( 'smolblog_social_accounts' );
+		if ( ! is_array( $blog_social ) ) {
+			$blog_social = [];
+		}
 ?>
 		<h1>Smolblog</h1>
 
@@ -67,6 +73,30 @@ class SmolblogMain implements Hookable {
 		<p>Add new account: <a href="<?php echo get_rest_url( null, 'smolblog/v1/twitter/init' ); ?>?_wpnonce=<?php echo wp_create_nonce( 'wp_rest' ); ?>" class="button">Sign in with Twitter</a></p>
 
 		<p>Twitter callback: <code><?php echo get_rest_url( null, 'smolblog/v1/twitter/callback' ); ?></code></p>
+
+		<h2>This Blog:</h2>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Account</th>
+					<th>Post</th>
+					<th>Import</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+			<?php foreach ( $blog_social as $account ) : ?>
+				<tr>
+					<td><strong>Twitter:</strong> <?php echo $account['name']; ?></td>
+					<td><?php echo $account['push'] ? 'Yes' : '&emdash;'; ?></td>
+					<td><?php echo $account['pull'] ? 'Yes' : '&emdash;'; ?></td>
+					<td><button>Remove</button>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+
 <?php
 	}
 }
