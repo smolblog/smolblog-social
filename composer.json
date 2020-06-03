@@ -2,6 +2,7 @@
 	"name": "smolblog/smolblog-social",
 	"description": "Connect WordPress to Twitter",
 	"version": "0.1.0",
+	"type": "wordpress-plugin",
 	"authors": [
 			{
 					"name": "Evan Hildreth",
@@ -20,7 +21,8 @@
 			"webdevstudios/oops-wp": "dev-feature/rest-api-support",
 			"j7mbo/twitter-api-php": "^1.0",
 			"abraham/twitteroauth": "^1.0",
-			"league/commonmark": "^0.18.1"
+			"league/commonmark": "^0.18.1",
+			"composer/installers": "~1.0"
 	},
 	"autoload": {
 			"psr-4": {
