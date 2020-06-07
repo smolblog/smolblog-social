@@ -76,10 +76,11 @@ class SmolblogMain implements Hookable {
 
 		<h2>This Blog:</h2>
 
-		<table>
+		<table class="widefat">
 			<thead>
 				<tr>
-					<th>Account</th>
+					<th class="row-title">Account</th>
+					<th>Owner</th>
 					<th>Post</th>
 					<th>Import</th>
 					<th></th>
@@ -88,10 +89,11 @@ class SmolblogMain implements Hookable {
 			<tbody>
 			<?php foreach ( $blog_social as $account ) : ?>
 				<tr>
-					<td><strong>Twitter:</strong> <?php echo $account['name']; ?></td>
-					<td><?php echo $account['push'] ? 'Yes' : '&emdash;'; ?></td>
-					<td><?php echo $account['pull'] ? 'Yes' : '&emdash;'; ?></td>
-					<td><button>Remove</button>
+					<td class="row-title"><?php echo $account['name']; ?></td>
+					<td><?php echo $account['owner'] ?></td>
+					<td><?php echo $account['push'] ? 'Yes' : '&mdash;'; ?></td>
+					<td><?php echo $account['pull'] ? 'Yes' : '&mdash;'; ?></td>
+					<td><?php submit_button( 'Remove', 'delete' ); ?></td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
