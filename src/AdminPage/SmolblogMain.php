@@ -57,7 +57,12 @@ class SmolblogMain implements Hookable {
 
 		$blog_social = get_option( 'smolblog_social_accounts' );
 		if ( ! is_array( $blog_social ) ) {
-			$blog_social = [];
+			$blog_social = [ [
+				'name' => 'oddevan',
+				'owner' => 'oddevan',
+				'push' => true,
+				'pull' => false,
+			] ];
 		}
 ?>
 		<h1>Smolblog</h1>
@@ -84,6 +89,7 @@ class SmolblogMain implements Hookable {
 					<th>Post</th>
 					<th>Import</th>
 					<th></th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -93,10 +99,26 @@ class SmolblogMain implements Hookable {
 					<td><?php echo $account['owner'] ?></td>
 					<td><?php echo $account['push'] ? 'Yes' : '&mdash;'; ?></td>
 					<td><?php echo $account['pull'] ? 'Yes' : '&mdash;'; ?></td>
-					<td><?php submit_button( 'Remove', 'delete' ); ?></td>
+					<td><a href="#" class="button">Update</a></td>
+					<td><a href="#" class="button">Remove</a></td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="6">
+						<form method="post">
+						Add new account:
+						<select>
+						<?php foreach ( $all_accounts as $account ) : ?>
+							<option value="<?php echo $account->id; ?>"><?php echo $account->social_username; ?></option>
+						<?php endforeach; ?>
+						</select>
+						<button>Add</button>
+						</form>
+					</td>
+				</tr>
+			</tfoot>
 		</table>
 
 <?php
