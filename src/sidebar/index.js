@@ -1,33 +1,76 @@
 /**
  * Get dependencies
  */
-const { __ } = wp.i18n;
-const { Fragment } = wp.element;
-const { PanelBody, PanelRow } = wp.components;
-const { registerPlugin } = wp.plugins;
-const { PluginSidebar, PluginSidebarMoreMenuItem } = wp.editPost;
+const {
+	i18n: { __ },
+	element: { Component, Fragment },
+	components: { PanelBody, PanelRow, Spinner },
+	plugins: { registerPlugin },
+	editPost: { PluginSidebar, PluginSidebarMoreMenuItem },
+	apiFetch,
+} = wp;
 
-const PluginSidebarDemo = props => {
-  return (
-    <Fragment>
-      <PluginSidebarMoreMenuItem target="jsforwpadvgb-demo">
-        {__("Plugin Sidebar Demo", "jsforwpadvblocks")}
-      </PluginSidebarMoreMenuItem>
-      <PluginSidebar
-        name="jsforwpadvgb-demo"
-        title={__("Plugin Sidebar Demo", "jsforwpadvblocks")}
-      >
-        <PanelBody title={__("Sidebar Header", "jsforwpadvblocks")} opened>
-          <PanelRow>
-            <p>{__("Plugin Sidebar Demo", "jsforwpadvblocks")}</p>
-          </PanelRow>
-        </PanelBody>
-      </PluginSidebar>
-    </Fragment>
-  );
+function getAccounts() {
+  return apiFetch({
+    path: "/smolblog/v1/social/accounts/"
+  })
+	.then(blockSetting => blockSetting)
+	.catch(error => error);
+}
+
+class SmolblogSocialSidebar extends Component {
+	state = {
+    accounts: {},
+    isLoading: true
+  };
+
+  async componentDidMount() {
+    const accounts = await getAccounts();
+    this.setState({
+      accounts,
+      isLoading: false
+    });
+  }
+
+  render() {
+		if (this.state.isLoading) {
+      return (
+        <p>
+          <Spinner />
+					{__("Loading accounts", "smolblog")}
+        </p>
+      );
+		}
+
+		/*
+		const accountPanels = this.state.accounts.map( account => (
+			<PanelBody title={account.name}></PanelBody>
+		));
+		*/
+
+		console.log(this.state.accounts);
+
+		return (
+			<Fragment>
+				<PluginSidebarMoreMenuItem target="smolblog-social">
+					{__("Smolblog Social", "smolblog")}
+				</PluginSidebarMoreMenuItem>
+				<PluginSidebar
+					name="smolblog-social"
+					title={__("Smolblog Social", "smolblog")}
+				>
+					<PanelBody title={__("Sidebar Header", "smolblog")} opened>
+						<PanelRow>
+							<p>Nothing here.</p>
+						</PanelRow>
+					</PanelBody>
+				</PluginSidebar>
+			</Fragment>
+		);
+	}
 };
 
-registerPlugin("jsforwpadvgb-demo", {
-  icon: "admin-plugins",
-  render: PluginSidebarDemo
+registerPlugin("smolblog-social", {
+  icon: "share-alt",
+  render: SmolblogSocialSidebar
 });
