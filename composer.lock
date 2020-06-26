@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "044e3f3d499706bcada4eaa6bc551d36",
+    "content-hash": "93154f0cd88be99f213ef0b5a285a10d",
     "packages": [
         {
             "name": "abraham/twitteroauth",
@@ -59,6 +59,41 @@
                 "twitter"
             ],
             "time": "2019-11-29T14:55:32+00:00"
+        },
+        {
+            "name": "alleyinteractive/wordpress-fieldmanager",
+            "version": "1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alleyinteractive/wordpress-fieldmanager.git",
+                "reference": "280bc23d803b959836345449b4a83f1d0fa03b17"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alleyinteractive/wordpress-fieldmanager/zipball/280bc23d803b959836345449b4a83f1d0fa03b17",
+                "reference": "280bc23d803b959836345449b4a83f1d0fa03b17",
+                "shasum": ""
+            },
+            "require": {
+                "composer/installers": "~1.0"
+            },
+            "require-dev": {
+                "squizlabs/php_codesniffer": "2.*",
+                "wp-coding-standards/wpcs": "^1"
+            },
+            "type": "wordpress-plugin",
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Alley Interactive",
+                    "email": "noreply@alleyinteractive.com"
+                }
+            ],
+            "keywords": [
+                "plugin",
+                "wordpress"
+            ],
+            "time": "2020-06-22T16:58:51+00:00"
         },
         {
             "name": "composer/installers",

@@ -27,6 +27,7 @@ class AdminPageRegistrar extends Service {
 	 * @since 0.1.0
 	 */
 	protected $pages = [
+		BlogSocialSettings::class,
 		SmolblogMain::class,
 	];
 

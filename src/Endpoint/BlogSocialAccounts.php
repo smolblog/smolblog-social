@@ -44,22 +44,8 @@ class BlogSocialAccounts extends ApiEndpoint {
 	 */
 	protected function get_args() : array {
 		return [
-			'methods'             => [ 'GET' ],
-			'permission_callback' => [ $this, 'is_user_logged_in' ],
+			'methods' => [ 'GET' ],
 		];
-	}
-
-	/**
-	 * Check if user is logged in; 'read' permissions are given
-	 * to Subscribers.
-	 *
-	 * @author Evan Hildreth <me@eph.me>
-	 * @since 0.1.0
-	 *
-	 * @return bool If current user has 'read' permissions.
-	 */
-	public function is_user_logged_in() {
-		return current_user_can( 'read' );
 	}
 
 	/**

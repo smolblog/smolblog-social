@@ -4,32 +4,40 @@
 	"version": "0.1.0",
 	"type": "wordpress-plugin",
 	"authors": [
-			{
-					"name": "Evan Hildreth",
-					"email": "me@eph.me",
-					"homepage": "http://eph.me",
-					"role": "Developer"
-			}
+		{
+			"name": "Evan Hildreth",
+			"email": "me@eph.me",
+			"homepage": "http://eph.me",
+			"role": "Developer"
+		}
 	],
 	"repositories":[
-			{
-					"type": "vcs",
-					"url": "https://github.com/webdevstudios/oops-wp"
-			}
+		{
+			"type": "vcs",
+			"url": "https://github.com/webdevstudios/oops-wp"
+		}
 	],
 	"require": {
-			"webdevstudios/oops-wp": "dev-feature/rest-api-support",
-			"j7mbo/twitter-api-php": "^1.0",
-			"abraham/twitteroauth": "^1.0",
-			"league/commonmark": "^0.18.1",
-			"composer/installers": "~1.0"
+		"webdevstudios/oops-wp": "dev-feature/rest-api-support",
+		"j7mbo/twitter-api-php": "^1.0",
+		"abraham/twitteroauth": "^1.0",
+		"league/commonmark": "^0.18.1",
+		"composer/installers": "~1.0",
+		"alleyinteractive/wordpress-fieldmanager": "^1.3"
   },
   "require-dev": {
     "webdevstudios/php-coding-standards": "^1.0"
   },
 	"autoload": {
-			"psr-4": {
-					"Smolblog\\Social\\": "src/"
-			}
+		"psr-4": {
+			"Smolblog\\Social\\": "src/"
+		}
+	},
+	"extra": {
+		"installer-paths": {
+			"../{$name}": ["type:wordpress-plugin"],
+			"../mu-plugins/{$name}": ["type:wordpress-muplugin"],
+			"../themes/{$name}": ["type:wordpress-theme"]
+		}
 	}
 }
