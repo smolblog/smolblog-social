@@ -1,4 +1,4 @@
-<?php //phpcs:ignore Wordpress.Files.Filename
+<?php
 /**
  * Endpoint Registrar for the plugin
  *
