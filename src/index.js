@@ -1,1 +1,1 @@
-import './block';
+import './sidebar';
