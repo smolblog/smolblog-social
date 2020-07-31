@@ -4,9 +4,10 @@
 const {
 	i18n: { __ },
 	element: { Component, Fragment },
-	components: { PanelBody, PanelRow, Spinner },
+	components: { PanelBody, PanelRow, Spinner, TextAreaControl },
 	plugins: { registerPlugin },
 	editPost: { PluginSidebar, PluginSidebarMoreMenuItem },
+	data: { select, dispatch },
 	apiFetch,
 } = wp;
 
@@ -20,35 +21,76 @@ function getAccounts() {
 
 class SmolblogSocialSidebar extends Component {
 	state = {
-    accounts: {},
+		socialMeta: [],
     isLoading: true
-  };
+	};
+	
+	setMeta( newMeta ) {
+		this.setState({ newMeta });
+		dispatch('core/editor').editPost({ meta: { smolblog_social_meta: newMeta } });
+	}
 
   async componentDidMount() {
-    const accounts = await getAccounts();
-    this.setState({
-      accounts,
-      isLoading: false
-    });
+		const accounts = await getAccounts();
+		const pushAccounts = accounts.filter( account => account.push )
+
+		// Get current post meta
+		const currentMeta = select('core/editor')
+			.getEditedPostAttribute('meta')
+			.smolblog_social_meta ?? [];
+
+		console.log({ pushAccounts, currentMeta })
+
+		// Disable all accounts in meta; we will re-enable valid accounts
+		const socialMeta = currentMeta.map( account => {
+			return {
+				...account,
+				disabled: true,
+			}
+		});
+
+		// Enable or create meta for valid accounts
+		pushAccounts.forEach( pushAccount => {
+			const metaIndex = socialMeta.findIndex( metaAccount => metaAccount.account_id === pushAccount.account_id );
+			if (metaIndex >= 0) {
+				// Found account in existing meta; re-enable
+				socialMeta[metaIndex].disabled = false;
+			} else {
+				// New account; create the metadata
+				socialMeta.push({
+					account_id: pushAccount.account_id,
+					account_service: pushAccount.service,
+					account_name: pushAccount.name
+				});
+			}
+		});
+
+		this.setMeta(socialMeta);
+
+		this.setState({ isLoading: false });
   }
 
   render() {
-		if (this.state.isLoading) {
-      return (
-        <p>
-          <Spinner />
-					{__("Loading accounts", "smolblog")}
-        </p>
-      );
+		console.log(this.state);
+
+		let accountPanels = (
+			<p>
+				<Spinner />
+				{__("Loading accounts", "smolblog")}
+			</p>
+		);
+
+		if (!this.state.isLoading) {
+      accountPanels = this.state.socialMeta.map( account => (
+				<PanelBody title={account.account_name} opened>
+					<PanelRow>
+						{/* <TextAreaControl
+							label={__("Tweet text", "smolblog")}
+						/> */}
+					</PanelRow>
+				</PanelBody>
+			));
 		}
-
-		/*
-		const accountPanels = this.state.accounts.map( account => (
-			<PanelBody title={account.name}></PanelBody>
-		));
-		*/
-
-		console.log(this.state.accounts);
 
 		return (
 			<Fragment>
@@ -59,11 +101,7 @@ class SmolblogSocialSidebar extends Component {
 					name="smolblog-social"
 					title={__("Smolblog Social", "smolblog")}
 				>
-					<PanelBody title={__("Sidebar Header", "smolblog")} opened>
-						<PanelRow>
-							<p>Nothing here.</p>
-						</PanelRow>
-					</PanelBody>
+					{accountPanels}
 				</PluginSidebar>
 			</Fragment>
 		);

@@ -63,6 +63,10 @@ class BlogSocialAccounts extends ApiEndpoint {
 		}
 
 		$block_setting = get_option( 'smolblog_social_accounts' );
+		$num_accounts  = count( $block_setting );
+		for ( $index = 0; $index < $num_accounts; $index++ ) {
+			$block_setting[ $index ]['account_id'] = $index + 1;
+		}
 
 		$response = new WP_REST_Response( $block_setting );
 		$response->set_status( 200 );
