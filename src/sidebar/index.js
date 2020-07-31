@@ -4,7 +4,7 @@
 const {
 	i18n: { __ },
 	element: { Component, Fragment },
-	components: { PanelBody, PanelRow, Spinner, TextAreaControl },
+	components: { PanelBody, PanelRow, Spinner, TextControl },
 	plugins: { registerPlugin },
 	editPost: { PluginSidebar, PluginSidebarMoreMenuItem },
 	data: { select, dispatch },
@@ -25,9 +25,17 @@ class SmolblogSocialSidebar extends Component {
     isLoading: true
 	};
 	
-	setMeta( newMeta ) {
+	setMeta(newMeta) {
 		this.setState({ socialMeta: newMeta });
 		dispatch('core/editor').editPost({ meta: { smolblog_social_meta: JSON.stringify(newMeta) } });
+	}
+
+	setTweetText(newText, accountId) {
+		const newMeta = JSON.parse(JSON.stringify(this.state.socialMeta));
+		const metaIndex = newMeta.findIndex( metaAccount => metaAccount.account_id === accountId );
+		
+		newMeta[metaIndex].tweetText = newText;
+		this.setMeta(newMeta)
 	}
 
   async componentDidMount() {
@@ -90,9 +98,11 @@ class SmolblogSocialSidebar extends Component {
       accountPanels = this.state.socialMeta.map( account => (
 				<PanelBody title={account.account_name} opened>
 					<PanelRow>
-						{/* <TextAreaControl
+						<TextControl
 							label={__("Tweet text", "smolblog")}
-						/> */}
+							value={account.tweetText}
+							onChange={newText => this.setTweetText(newText, account.account_id)}
+						/>
 						{account.disabled ? (<p>Push not enabled</p>) : (<p>TextArea goes here</p>)}
 					</PanelRow>
 				</PanelBody>
