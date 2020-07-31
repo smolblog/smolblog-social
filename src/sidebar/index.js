@@ -26,7 +26,7 @@ class SmolblogSocialSidebar extends Component {
 	};
 	
 	setMeta( newMeta ) {
-		this.setState({ newMeta });
+		this.setState({ socialMeta: newMeta });
 		dispatch('core/editor').editPost({ meta: { smolblog_social_meta: newMeta } });
 	}
 
