@@ -27,7 +27,7 @@ class SmolblogSocialSidebar extends Component {
 	
 	setMeta( newMeta ) {
 		this.setState({ socialMeta: newMeta });
-		dispatch('core/editor').editPost({ meta: { smolblog_social_meta: newMeta } });
+		dispatch('core/editor').editPost({ meta: { smolblog_social_meta: JSON.stringify(newMeta) } });
 	}
 
   async componentDidMount() {
@@ -35,9 +35,15 @@ class SmolblogSocialSidebar extends Component {
 		const pushAccounts = accounts.filter( account => account.push )
 
 		// Get current post meta
-		const currentMeta = select('core/editor')
-			.getEditedPostAttribute('meta')
-			.smolblog_social_meta ?? [];
+		let currentMeta = [];
+		try {
+			currentMeta = JSON.parse(select('core/editor')
+				.getEditedPostAttribute('meta')
+				.smolblog_social_meta)
+		}
+		catch(error) {
+			console.log('Error parsing JSON; assuming blank.', error);
+		}
 
 		console.log({ pushAccounts, currentMeta })
 
@@ -87,6 +93,7 @@ class SmolblogSocialSidebar extends Component {
 						{/* <TextAreaControl
 							label={__("Tweet text", "smolblog")}
 						/> */}
+						{account.disabled ? (<p>Push not enabled</p>) : (<p>TextArea goes here</p>)}
 					</PanelRow>
 				</PanelBody>
 			));

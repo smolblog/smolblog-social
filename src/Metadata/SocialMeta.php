@@ -28,11 +28,10 @@ class SocialMeta extends Service {
 	 * My init callback.
 	 */
 	public function init_social_metadata() {
-		register_meta(
-			'post',
+		register_post_meta(
+			'',
 			'smolblog_social_meta',
 			[
-				'type'         => 'array',
 				'description'  => 'The data (to be) sent to different social platforms for this post',
 				'single'       => true,
 				'show_in_rest' => true,
