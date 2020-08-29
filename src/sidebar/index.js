@@ -28,6 +28,7 @@ class SmolblogSocialSidebar extends Component {
 	setMeta(newMeta) {
 		this.setState({ socialMeta: newMeta });
 		dispatch('core/editor').editPost({ meta: { smolblog_social_meta: JSON.stringify(newMeta) } });
+		console.log('Setting Smoblog Social meta', newMeta);
 	}
 
 	setTweetText(newText, accountId) {
@@ -53,7 +54,7 @@ class SmolblogSocialSidebar extends Component {
 			console.log('Error parsing JSON; assuming blank.', error);
 		}
 
-		console.log({ pushAccounts, currentMeta })
+		//console.log({ pushAccounts, currentMeta })
 
 		// Disable all accounts in meta; we will re-enable valid accounts
 		const socialMeta = currentMeta.map( account => {
@@ -85,7 +86,7 @@ class SmolblogSocialSidebar extends Component {
   }
 
   render() {
-		console.log(this.state);
+		//console.log(this.state);
 
 		let accountPanels = (
 			<p>

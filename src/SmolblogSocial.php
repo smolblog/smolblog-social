@@ -41,5 +41,6 @@ class SmolblogSocial extends Plugin {
 		Endpoint\EndpointRegistrar::class,
 		AdminPage\AdminPageRegistrar::class,
 		Metadata\SocialMeta::class,
+		Hook\HookRegistrar::class,
 	];
 }

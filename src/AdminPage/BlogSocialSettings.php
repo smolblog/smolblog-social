@@ -41,10 +41,11 @@ class BlogSocialSettings implements Hookable {
 			'label_macro'    => [ '%s', 'service' ],
 			'add_more_label' => 'Add another account',
 			'children'       => [
-				'service' => new Fieldmanager_Textfield( 'Service' ),
-				'name'    => new Fieldmanager_Textfield( 'Name' ),
-				'owner'   => new Fieldmanager_Textfield( 'Owner' ),
-				'push'    => new Fieldmanager_Checkbox(
+				'account_id' => new Fieldmanager_TextField( 'ID', [ 'input_type' => 'number' ] ),
+				'service'    => new Fieldmanager_Textfield( 'Service' ),
+				'name'       => new Fieldmanager_Textfield( 'Name' ),
+				'owner'      => new Fieldmanager_Textfield( 'Owner' ),
+				'push'       => new Fieldmanager_Checkbox(
 					'Allow posting to this account',
 					[
 						'checked_value'   => true,
@@ -52,7 +53,7 @@ class BlogSocialSettings implements Hookable {
 						'save_empty'      => true,
 					]
 				),
-				'pull'    => new Fieldmanager_Checkbox(
+				'pull'       => new Fieldmanager_Checkbox(
 					'Allow importing from this account',
 					[
 						'checked_value'   => true,

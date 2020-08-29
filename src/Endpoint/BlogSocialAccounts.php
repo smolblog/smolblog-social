@@ -45,7 +45,20 @@ class BlogSocialAccounts extends ApiEndpoint {
 	protected function get_args() : array {
 		return [
 			'methods' => [ 'GET' ],
+			'permission_callback' => [ $this, 'can_user_write' ],
 		];
+	}
+
+	/**
+	 * Check if user is able to use the post editor.
+	 *
+	 * @author Evan Hildreth <me@eph.me>
+	 * @since 0.1.0
+	 *
+	 * @return bool If current user has 'edit_post' permissions.
+	 */
+	public function can_user_write() {
+		return current_user_can( 'edit_posts' );
 	}
 
 	/**
@@ -63,10 +76,13 @@ class BlogSocialAccounts extends ApiEndpoint {
 		}
 
 		$block_setting = get_option( 'smolblog_social_accounts' );
-		$num_accounts  = count( $block_setting );
-		for ( $index = 0; $index < $num_accounts; $index++ ) {
-			$block_setting[ $index ]['account_id'] = $index + 1;
-		}
+		// $num_accounts  = count( $block_setting );
+		// for ( $index = 0; $index < $num_accounts; $index++ ) {
+		// 	$block_setting[ $index ]['account_id'] = $index + 1;
+		// }
+
+		// error_log( 'Hello from BlogSocialAccounts' );
+		// error_log( print_r( $block_setting, true ) );
 
 		$response = new WP_REST_Response( $block_setting );
 		$response->set_status( 200 );
