@@ -22,7 +22,8 @@
 			"j7mbo/twitter-api-php": "^1.0",
 			"abraham/twitteroauth": "^1.0",
 			"league/commonmark": "^0.18.1",
-			"composer/installers": "~1.0"
+			"composer/installers": "~1.0",
+			"webdevstudios/php-coding-standards": "~1.0.0"
 	},
 	"autoload": {
 			"psr-4": {
