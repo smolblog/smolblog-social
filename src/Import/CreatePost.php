@@ -16,10 +16,10 @@ class CreatePost {
 	 * @param string $twid ID of tweet to check.
 	 * @return bool True if tweet has been imported.
 	 */
-	public function has_been_imported( $twid ) {
+	public function has_been_imported( $import_id ) {
 		$check_query = new \WP_Query( [
-			'meta_key'   => 'smolblog_twitter_id',
-			'meta_value' => $twid,
+			'meta_key'   => 'smolblog_social_import_id',
+			'meta_value' => $import_id,
 		] );
 
 		return $check_query->found_posts > 0;
@@ -32,13 +32,11 @@ class CreatePost {
 	 * @param int    $post_id ID of the WordPress post this media should be attached to.
 	 * @return int WordPress ID of imported media.
 	 */
-	private function sideload_media( $url, $post_id ) {
+	private function sideload_media( $url, $post_id, $desc ) {
 		$tmp = download_url( $url );
 		if ( is_wp_error( $tmp ) ) {
 			return $tmp;
 		}
-		$post_id    = 1;
-		$desc       = 'Image from Twitter';
 		$file_array = array();
 
 		// Set variables for storage

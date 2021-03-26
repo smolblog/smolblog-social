@@ -48,13 +48,17 @@ class Twitter {
 			return;
 		}
 
+		$posts_to_import = [];
 		foreach ( $twitter_response as $tweet ) {
 			if ( ! $this->has_been_imported( $tweet->id ) ) {
-				echo esc_html( print_r( $this->import_tweet( $tweet ), true ) );
+				$posts_to_import[] = $this->import_tweet( $tweet );
 			} else {
 				echo "Tweet {$tweet->id} already imported.\n";
 			}
 		}
+
+		echo esc_html( print_r( $posts_to_import, true ) );
+
 
 		echo 'Done!';
 	}
@@ -87,6 +91,7 @@ class Twitter {
 			'status'    => 'publish',
 			'slug'      => $tweet->id,
 			'author'    => get_current_user_id(),
+			'media'     => [],
 			'tags'      => [],
 			'meta'      => [],
 			'reblog'    => false,
@@ -117,14 +122,14 @@ class Twitter {
 		foreach ( $tweet->entities->urls as $tacolink ) {
 			if ( $tweet->is_quote_status && isset( $tweet->quoted_status_id ) ) {
 				$ind = strrpos( $tacolink->expanded_url, '/' );
-				if ( substr( $tacolink->expanded_url, $ind + 1 ) === $tweet->quoted_status_id ) {
+				if ( substr( $tacolink->expanded_url, $ind + 1 ) === $tweet->quoted_status_id_str ) {
 					$body = str_replace( $tacolink->url, '', $body );
 				}
 			}
 
 			$body = str_replace(
 				$tacolink->url,
-				"<a href=\"{$tacolink->expanded_url}\">@{$tacolink->display_url}</a>",
+				"<a href=\"{$tacolink->expanded_url}\">{$tacolink->display_url}</a>",
 				$body
 			);
 		}
@@ -154,19 +159,21 @@ class Twitter {
 			}
 		}
 
-		// $body = $this->process_markdown( $body );
+		$body = $this->process_markdown( $body );
 
 		$new_post['content'] = $body;
 
-		/*
 		if ( empty( $tweet->retweeted_status ) && ! empty( $tweet->extended_entities->media ) ) {
 			foreach ( $tweet->extended_entities->media as $media ) {
+				$local_id = count( $new_post['media'] );
 				if ( 'photo' === $media->type ) {
-					$imgid = $this->sideload_media( $media->media_url_https, $id );
+					$new_post['media'][] = [
+						'type' => 'image',
+						'url'  => $media->media_url_https,
+						'alt'  => 'Image from Twitter',
+					];
 
-					$body .= "\n\n" . '<!-- wp:image {"id":' . $imgid . '} -->
-<figure class="wp-block-image"><img src="' . wp_get_attachment_url( $imgid ) . '" alt="" class="wp-image-' . $imgid . '"/></figure>
-<!-- /wp:image -->';
+					$new_post['content'] .= "\n\#SMOLBLOG_MEDIA_IMPORT#{$local_id}#\n";
 				} elseif ( 'video' === $media->type || 'animated_gif' === $media->type ) {
 					$video_url     = '#';
 					$video_bitrate = -1;
@@ -177,25 +184,18 @@ class Twitter {
 						}
 					}
 
-					$vidid = $this->sideload_media( $video_url, $id );
+					$new_post['media'][] = [
+						'type' => 'video',
+						'url'  => $video_url,
+						'alt'  => 'Video from Twitter',
+						'atts' => ( 'animated_gif' === $media->type ) ? 'autoplay loop ' : null,
+					];
 
-					$body .= "\n\n" . '<!-- wp:video {"id":' . $vidid . '} -->
-<figure class="wp-block-video"><video controls ';
-
-					if ( 'animated_gif' === $media->type ) {
-						$body .= 'autoplay loop ';
-					}
-
-					$body .= 'preload="auto" src="' . wp_get_attachment_url( $vidid ) . '"></video></figure>
-<!-- /wp:video -->';
+					$new_post['content'] .= "\n#SMOLBLOG_MEDIA_IMPORT#{$local_id}#\n";
 				}
 			}
-
-			$new_post['ID']           = $id;
-			$new_post['post_content'] = $body;
-			wp_insert_post( $new_post );
 		}
-		*/
+
 		return $new_post;
 	}
 
@@ -250,5 +250,26 @@ class Twitter {
 		} else {
 				return date( 'Y-m-d H:i:s', $timestamp );
 		}
+	}
+
+	/**
+	 * Instance of League/CommonMark.
+	 *
+	 * @var CommonMarkConverter $markdown_processor
+	 */
+	private $markdown_processor = false;
+
+	/**
+	 * Process text through a Markdown processor
+	 *
+	 * @param string $md Markdown-formatted text to convert.
+	 * @return string HTML-formatted text.
+	 */
+	private function process_markdown( $md ) {
+		if ( ! $this->markdown_processor ) {
+			$this->markdown_processor = new \League\CommonMark\CommonMarkConverter();
+		}
+
+		return $this->markdown_processor->convertToHtml( $md );
 	}
 }
