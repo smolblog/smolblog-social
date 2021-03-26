@@ -10,6 +10,7 @@
 namespace Smolblog\Social\AdminPage;
 
 use WebDevStudios\OopsWP\Utility\Hookable;
+use Smolblog\Social\Import\Twitter;
 
 /**
  * Registrar class to register our custom post types
@@ -56,11 +57,24 @@ class SmolblogMain implements Hookable {
 ?>
 		<h1>Smolblog</h1>
 
+		<?php if ( ! empty ( $_GET['smolblog_action'] ) && 'import_twitter' === $_GET['smolblog_action'] ) : ?>
+			<h2>Twitter import</h2>
+			<pre>
+			<?php
+				$importer = new Twitter();
+				$importer->import_twitter( $_GET['social_id'] );
+			?>
+			</pre>
+		<?php endif; ?>:
+
 		<h2>Connected social accounts:</h2>
 
 		<ul>
 		<?php foreach ( $all_accounts as $account ) : ?>
-			<li><strong>Twitter:</strong> <?php echo $account->social_username; ?></li>
+			<li>
+				<strong>Twitter:</strong> <?php echo $account->social_username; ?>
+				<a href="?page=smolblog&amp;smolblog_action=import_twitter&amp;social_id=<?php echo $account->id; ?>" class="button">Import</a>
+			</li>
 		<?php endforeach; ?>
 		</ul>
 
