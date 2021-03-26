@@ -57,7 +57,11 @@ class Twitter {
 			}
 		}
 
-		echo esc_html( print_r( $posts_to_import, true ) );
+		$loader = new CreatePost();
+		foreach ( $posts_to_import as $post ) {
+			$post_id = $loader->create_post( $post );
+			echo "{$post_id} created.\n";
+		}
 
 
 		echo 'Done!';

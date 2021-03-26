@@ -25,6 +25,74 @@ class CreatePost {
 		return $check_query->found_posts > 0;
 	}
 
+	public function create_post( $new_post ) {
+		$post_content = $new_post['content'] ?? '';
+
+		if ( $new_post['reblog'] ) {
+			$new_post['meta']['smolblog_is_reblog']  = true;
+			$new_post['meta']['smolblog_reblog_url'] = $new_post['reblog'];
+
+			$post_content = '<!-- wp:smolblog/reblog {"showEmbed":true,"title":""} -->
+			<div class="wp-block-smolblog-reblog">
+			<!-- wp:embed {"url":"' . $new_post['reblog'] . '","type":"rich","className":""} -->
+			<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
+			' . $new_post['reblog'] . '
+			</div></figure>
+			<!-- /wp:embed --></div>
+			<!-- /wp:smolblog/reblog -->' . "\n\n" . $post_content;
+		}
+
+		$args = [
+			'post_title'   => $new_post['title'] ?? '',
+			'post_content' => $post_content,
+			'post_date'    => $new_post['date'] ?? null,
+			'post_excerpt' => $new_post['excerpt'] ?? null,
+			'post_status'  => 'draft',
+			'post_name'    => $new_post['slug'] ?? null,
+			'post_author'  => $new_post['author'] ?? get_current_user_id(),
+			'tags_input'   => $new_post['tags'],
+			'meta_input'   => $new_post['meta'],
+		];
+
+		$args['meta_input']['smolblog_social_import_id'] = $new_post['import_id'];
+
+		$post_id = wp_insert_post( array_filter( $args ), true );
+
+		if ( is_wp_error( $post_id ) ) {
+			print_r( $post_id );
+			throw new \Exception( 'Error creating post: ' . $post_id->get_error_message(), 1 );
+		}
+
+		if ( $new_post['media'] ) {
+			foreach ( $new_post['media'] as $local_id => $media ) {
+				$wp_id = $this->sideload_media( $media['url'], $post_id, $media['alt'] );
+				$html  = '';
+
+				switch ( $media['type'] ) {
+					case 'image':
+						$html = '<!-- wp:image {"id":' . $wp_id . '} -->
+						<figure class="wp-block-image"><img src="' . wp_get_attachment_url( $wp_id ) . '" alt="" class="wp-image-' . $wp_id . '"/></figure>
+						<!-- /wp:image -->';
+						break;
+					case 'video':
+						$html = '<!-- wp:video {"id":' . $wp_id . '} -->
+						<figure class="wp-block-video"><video controls ' . ( $media['atts'] ?? '' ) . 'preload="auto" src="' . wp_get_attachment_url( $wp_id ) . '"></video></figure>
+						<!-- /wp:video -->';
+						break;
+				}
+
+				$post_content = str_replace( "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#", $html, $post_content );
+			}
+
+			wp_insert_post( [
+				'ID'           => $post_id,
+				'post_content' => $post_content,
+			] );
+		}
+
+		return $post_id;
+	}
+
 	/**
 	 * Imports the media found at the given URL into the WP Media Library linked to the given post
 	 *
