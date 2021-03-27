@@ -65,7 +65,7 @@ class SmolblogMain implements Hookable {
 				$importer->import_twitter( $_GET['social_id'] );
 			?>
 			</pre>
-		<?php endif; ?>:
+		<?php endif; ?>
 
 		<h2>Connected social accounts:</h2>
 
