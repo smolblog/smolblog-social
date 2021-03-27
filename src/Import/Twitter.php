@@ -102,7 +102,7 @@ class Twitter {
 		];
 
 		if ( ! empty( $tweet->retweeted_status ) ) {
-			$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/statuses/' . $tweet->retweeted_status->id );
+			$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/_smolblog/status/' . $tweet->retweeted_status->id );
 			return $new_post;
 		}
 
@@ -114,13 +114,13 @@ class Twitter {
 
 		if ( $tweet->in_reply_to_status_id ) {
 			if ( $tweet->in_reply_to_user_id !== $tweet->user->id ) {
-				$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/statuses/' . $tweet->in_reply_to_status_id );
+				$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/_smolblog/status/' . $tweet->in_reply_to_status_id );
 				$new_post['meta']['smolblog_twitter_replyid'] = $tweet->in_reply_to_status_id;
 			} else {
 				$new_post['meta']['smolblog_twitter_threadprevid'] = $tweet->in_reply_to_status_id;
 			}
 		} elseif ( $tweet->is_quote_status && isset( $tweet->quoted_status_id ) ) {
-			$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/statuses/' . $tweet->quoted_status_id );
+			$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/_smolblog/status/' . $tweet->quoted_status_id );
 		}
 
 		foreach ( $tweet->entities->urls as $tacolink ) {
