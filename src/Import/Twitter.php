@@ -38,7 +38,7 @@ class Twitter {
 		$twitter = new \TwitterAPIExchange( $twitter_api_settings );
 
 		$url      = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-		$getfield = '?count=10&trim_user=true&exclude_replies=false&include_rts=true&tweet_mode=extended';
+		$getfield = '?count=50&trim_user=true&exclude_replies=false&include_rts=true&tweet_mode=extended';
 
 		$twitter_json     = $twitter->setGetfield( $getfield )->buildOauth( $url, 'GET' )->performRequest();
 		$twitter_response = json_decode( $twitter_json );

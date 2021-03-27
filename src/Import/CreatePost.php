@@ -56,6 +56,8 @@ class CreatePost {
 
 		$args['meta_input']['smolblog_social_import_id'] = $new_post['import_id'];
 
+		// echo esc_html( print_r( array_filter( $args ), true ) );
+		// return;
 		$post_id = wp_insert_post( array_filter( $args ), true );
 
 		if ( is_wp_error( $post_id ) ) {
@@ -83,12 +85,14 @@ class CreatePost {
 
 				$post_content = str_replace( "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#", $html, $post_content );
 			}
-
-			wp_insert_post( [
-				'ID'           => $post_id,
-				'post_content' => $post_content,
-			] );
 		}
+
+		wp_insert_post( [
+			'ID'           => $post_id,
+			'post_content' => $post_content,
+			'post_status'  => $new_post['status'],
+			'post_date'    => $new_post['date'] ?? null,
+		] );
 
 		return $post_id;
 	}
