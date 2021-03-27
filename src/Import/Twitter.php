@@ -38,7 +38,7 @@ class Twitter {
 		$twitter = new \TwitterAPIExchange( $twitter_api_settings );
 
 		$url      = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-		$getfield = '?count=50&trim_user=true&exclude_replies=false&include_rts=true&tweet_mode=extended';
+		$getfield = '?count=50&trim_user=false&exclude_replies=false&include_rts=true&tweet_mode=extended';
 
 		$twitter_json     = $twitter->setGetfield( $getfield )->buildOauth( $url, 'GET' )->performRequest();
 		$twitter_response = json_decode( $twitter_json );
@@ -102,7 +102,9 @@ class Twitter {
 		];
 
 		if ( ! empty( $tweet->retweeted_status ) ) {
-			$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/_smolblog/status/' . $tweet->retweeted_status->id );
+			$new_post['reblog'] = 'https://twitter.com/' .
+				$tweet->retweeted_status->user->screen_name .
+				'/status/' . $tweet->retweeted_status->id;
 			return $new_post;
 		}
 
@@ -114,13 +116,14 @@ class Twitter {
 
 		if ( $tweet->in_reply_to_status_id ) {
 			if ( $tweet->in_reply_to_user_id !== $tweet->user->id ) {
-				$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/_smolblog/status/' . $tweet->in_reply_to_status_id );
+				$new_post['reblog'] = 'https://twitter.com/' . $tweet->in_reply_to_screen_name .
+					'/status/' . $tweet->in_reply_to_status_id;
 				$new_post['meta']['smolblog_twitter_replyid'] = $tweet->in_reply_to_status_id;
 			} else {
 				$new_post['meta']['smolblog_twitter_threadprevid'] = $tweet->in_reply_to_status_id;
 			}
 		} elseif ( $tweet->is_quote_status && isset( $tweet->quoted_status_id ) ) {
-			$new_post['reblog'] = $this->getfinalurl( 'https://twitter.com/_smolblog/status/' . $tweet->quoted_status_id );
+			$new_post['reblog'] = $tweet->quoted_status_permalink->expanded;
 		}
 
 		foreach ( $tweet->entities->urls as $tacolink ) {
