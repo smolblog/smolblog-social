@@ -207,44 +207,6 @@ class Twitter {
 	}
 
 	/**
-	 * Use cURL to follow all the redirects to get the final URL. Twitter will redirect
-	 * `twitter.com/statuses/[tweet id]` to its proper place, and WordPress needs this
-	 * final URL for its oEmbed to work.
-	 *
-	 * @param string $url URL to search.
-	 * @return string URL at the end of all redirects
-	 */
-	private function getfinalurl( $url ) {
-		// via https://stackoverflow.com/questions/17472329/php-get-url-of-redirect-from-source-url .
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_HEADER, true );
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true ); // Must be set to true so that PHP follows any "Location:" header.
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-
-		curl_exec( $ch );
-		$newurl = curl_getinfo( $ch, CURLINFO_EFFECTIVE_URL );
-
-		return $newurl;
-	}
-
-	/**
-	 * Given a tweet ID number, return the Gutenberg block to embed the tweet.
-	 *
-	 * @param string $twid ID number of tweet.
-	 * @return string Embed code for given tweet.
-	 */
-	private function get_tweet_embed( $twid ) {
-		$twurl = $this->getfinalurl( 'https://twitter.com/statuses/' . $twid );
-
-		return '<!-- wp:embed {"url":"' . $twurl . '","type":"rich","providerNameSlug":"twitter","responsive":true} -->
-		<figure class="wp-block-embed is-type-rich is-provider-twitter wp-block-embed-twitter"><div class="wp-block-embed__wrapper">
-		' . $twurl . '
-		</div></figure>
-		<!-- /wp:embed -->';
-	}
-
-	/**
 	 * Convert date in CSV file to 1999-12-31 23:52:00 format
 	 *
 	 * @param string $data Date to convert.
