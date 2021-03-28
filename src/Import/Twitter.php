@@ -38,7 +38,7 @@ class Twitter {
 		$twitter = new \TwitterAPIExchange( $twitter_api_settings );
 
 		$url      = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-		$getfield = '?count=50&trim_user=false&exclude_replies=false&include_rts=true&tweet_mode=extended';
+		$getfield = '?count=100&trim_user=false&exclude_replies=false&include_rts=true&tweet_mode=extended';
 
 		$twitter_json     = $twitter->setGetfield( $getfield )->buildOauth( $url, 'GET' )->performRequest();
 		$twitter_response = json_decode( $twitter_json );
@@ -49,12 +49,25 @@ class Twitter {
 		}
 
 		$posts_to_import = [];
-		foreach ( $twitter_response as $tweet ) {
-			if ( ! $this->has_been_imported( $tweet->id ) ) {
-				$posts_to_import[] = $this->import_tweet( $tweet );
-			} else {
-				echo "Tweet {$tweet->id} already imported.\n";
+		$max_twid        = -1;
+		$all_empty       = false;
+
+		while ( ! empty( $twitter_response ) && ! $all_empty ) {
+			$all_empty = true;
+
+			foreach ( $twitter_response as $tweet ) {
+				if ( ! $this->has_been_imported( $tweet->id ) ) {
+					$posts_to_import[] = $this->import_tweet( $tweet );
+					$all_empty         = false;
+				}
+				if ( $max_twid > $tweet->id || -1 === $max_twid ) {
+					$max_twid = $tweet->id;
+				}
 			}
+
+			$max_twid--;
+			$twitter_json     = $twitter->setGetfield( $getfield . '&max_id=' . $max_twid )->buildOauth( $url, 'GET' )->performRequest();
+			$twitter_response = json_decode( $twitter_json );
 		}
 
 		$loader = new CreatePost();
