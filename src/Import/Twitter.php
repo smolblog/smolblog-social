@@ -9,6 +9,8 @@
 
 namespace Smolblog\Social\Import;
 
+use Smolblog\Social\Job\JobQueue;
+
 /**
  * Handle importing tweets from Twitter
  */
@@ -17,9 +19,10 @@ class Twitter {
 	 * Import the twitter timeline of the given authorized account.
 	 *
 	 * @param int $account_id Database ID of the account to import.
+	 * @param int $twitter_max_id Optional max_id to pass to the twitter API for pagination.
 	 * @return void
 	 */
-	public function import_twitter( $account_id ) {
+	public function import_twitter( $account_id, $twitter_max_id = false ) {
 		global $wpdb;
 
 		$table_name   = $wpdb->prefix . 'smolblog_social';
@@ -42,7 +45,10 @@ class Twitter {
 		$twitter = new \TwitterAPIExchange( $twitter_api_settings );
 
 		$url      = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-		$getfield = '?count=100&trim_user=false&exclude_replies=false&include_rts=true&tweet_mode=extended';
+		$getfield = '?count=20&trim_user=false&exclude_replies=false&include_rts=true&tweet_mode=extended';
+		if ( $twitter_max_id ) {
+			$getfield .= '&max_id=' . $twitter_max_id;
+		}
 
 		$twitter_json     = $twitter->setGetfield( $getfield )->buildOauth( $url, 'GET' )->performRequest();
 		$twitter_response = json_decode( $twitter_json );
@@ -52,35 +58,40 @@ class Twitter {
 			return;
 		}
 
+		if ( empty( $twitter_response ) ) {
+			return;
+		}
+
 		$posts_to_import = [];
 		$max_twid        = -1;
-		$all_empty       = false;
+		$all_empty       = true;
 
-		while ( ! empty( $twitter_response ) && ! $all_empty ) {
-			$all_empty = true;
-
-			foreach ( $twitter_response as $tweet ) {
-				if ( ! $this->has_been_imported( $tweet->id ) ) {
-					$posts_to_import[] = $this->import_tweet( $tweet );
-					$all_empty         = false;
-				}
-				if ( $max_twid > $tweet->id || -1 === $max_twid ) {
-					$max_twid = $tweet->id;
-				}
+		foreach ( $twitter_response as $tweet ) {
+			if ( ! $this->has_been_imported( $tweet->id ) ) {
+				$posts_to_import[] = $this->import_tweet( $tweet );
+				$all_empty         = false;
 			}
-
-			$max_twid--;
-			$twitter_json     = $twitter->setGetfield( $getfield . '&max_id=' . $max_twid )->buildOauth( $url, 'GET' )->performRequest();
-			$twitter_response = json_decode( $twitter_json );
+			if ( $max_twid > $tweet->id || -1 === $max_twid ) {
+				$max_twid = $tweet->id;
+			}
 		}
 
 		$loader = new CreatePost();
 		foreach ( $posts_to_import as $post ) {
 			$post_id = $loader->create_post( $post );
-			echo esc_html( $post_id ) . " created.\n";
 		}
 
-		echo 'Done!';
+		if ( ! $all_empty ) {
+			$max_twid--;
+			( new JobQueue() )->enqueue_single_job(
+				[ $this, 'import_twitter' ],
+				[
+					$account_id,
+					$max_twid,
+				],
+				'twitter_import_'
+			);
+		}
 	}
 
 	/**
