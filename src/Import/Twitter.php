@@ -9,10 +9,14 @@
 
 namespace Smolblog\Social\Import;
 
+/**
+ * Handle importing tweets from Twitter
+ */
 class Twitter {
 	/**
-	 * Import the twitter timeline of the currently authorized account.
+	 * Import the twitter timeline of the given authorized account.
 	 *
+	 * @param int $account_id Database ID of the account to import.
 	 * @return void
 	 */
 	public function import_twitter( $account_id ) {
@@ -22,7 +26,7 @@ class Twitter {
 		$account_info = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM $table_name WHERE id = %d", //phpcs:ignore
-				$account_id,
+				$account_id
 			)
 		);
 
@@ -73,9 +77,8 @@ class Twitter {
 		$loader = new CreatePost();
 		foreach ( $posts_to_import as $post ) {
 			$post_id = $loader->create_post( $post );
-			echo "{$post_id} created.\n";
+			echo esc_html( $post_id ) . " created.\n";
 		}
-
 
 		echo 'Done!';
 	}
@@ -87,10 +90,12 @@ class Twitter {
 	 * @return bool True if tweet has been imported.
 	 */
 	public function has_been_imported( $twid ) {
-		$check_query = new \WP_Query( [
-			'meta_key'   => 'smolblog_social_import_id',
-			'meta_value' => 'twitter_' . $twid,
-		] );
+		$check_query = new \WP_Query(
+			[
+				'meta_key'   => 'smolblog_social_import_id',
+				'meta_value' => 'twitter_' . $twid,
+			]
+		);
 
 		return $check_query->found_posts > 0;
 	}
@@ -129,7 +134,7 @@ class Twitter {
 
 		if ( $tweet->in_reply_to_status_id ) {
 			if ( $tweet->in_reply_to_user_id !== $tweet->user->id ) {
-				$new_post['reblog'] = 'https://twitter.com/' . $tweet->in_reply_to_screen_name .
+				$new_post['reblog']                           = 'https://twitter.com/' . $tweet->in_reply_to_screen_name .
 					'/status/' . $tweet->in_reply_to_status_id;
 				$new_post['meta']['smolblog_twitter_replyid'] = $tweet->in_reply_to_status_id;
 			} else {
@@ -230,7 +235,7 @@ class Twitter {
 		if ( false === $timestamp ) {
 				return '';
 		} else {
-				return date( 'Y-m-d H:i:s', $timestamp );
+				return gmdate( 'Y-m-d H:i:s', $timestamp );
 		}
 	}
 
