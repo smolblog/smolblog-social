@@ -18,10 +18,16 @@ namespace Smolblog\Social;
 
 defined( 'ABSPATH' ) || die( 'Please do not.' );
 
+// Load composer libraries
 $autoload = __DIR__ . '/vendor/autoload.php';
-
 if ( is_readable( $autoload ) ) {
 	require_once $autoload;
+}
+
+// Load Action Scheduler
+$action_scheduler = __DIR__ . '/vendor/plugins/action-scheduler/action-scheduler.php';
+if ( is_readable( $action_scheduler ) ) {
+	require_once $action_scheduler;
 }
 
 add_action( 'plugins_loaded', function() {
