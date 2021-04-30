@@ -14,15 +14,23 @@ namespace Smolblog\Social\Job;
  */
 class JobQueue {
 	/**
-	 * Fire off an asynchronous job that calls $callback with $args
+	 * Fire off an asynchronous job identified by $name with $args
 	 *
-	 * @param callable $callback Function to execute.
-	 * @param array    $args Arguments to pass to $callback.
-	 * @param string   $name Optional name for the action to display in admin.
+	 * @param string $name Name of job.
+	 * @param array  $args Arguments to pass to $callback.
 	 */
-	public function enqueue_single_job( callable $callback, array $args = [], string $name = null ) {
-		$action_name = ( $name ?? 'smolblog_job_queue' ) . '_' . time();
-		add_action( $action_name, $callback, 1, count( $args ) );
-		as_enqueue_async_action( $action_name, $args, 'smolblog' );
+	public function enqueue_single_job( string $name, array $args = [] ) {
+		as_enqueue_async_action( $name, $args, 'smolblog' );
+	}
+
+	/**
+	 * Register a job to be scheduled later
+	 *
+	 * @param string   $name Name of job.
+	 * @param callable $callback Function to call when job is executed.
+	 * @param integer  $num_args Number of arguments accepted by the job.
+	 */
+	public function register_job( string $name, callable $callback, int $num_args ) {
+		add_action( $name, $callback, 1, $num_args );
 	}
 }

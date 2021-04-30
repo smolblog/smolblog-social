@@ -84,12 +84,11 @@ class Twitter {
 		if ( ! $all_empty ) {
 			$max_twid--;
 			( new JobQueue() )->enqueue_single_job(
-				[ $this, 'import_twitter' ],
+				'smolblog_import_twitter',
 				[
 					$account_id,
 					$max_twid,
-				],
-				'twitter_import_'
+				]
 			);
 		}
 	}
