@@ -9,22 +9,34 @@
 
 namespace Smolblog\Social\Import;
 
+/**
+ * Create a WordPress post from the import information
+ */
 class CreatePost {
 	/**
 	 * Check to see if this tweet is already imported
 	 *
-	 * @param string $twid ID of tweet to check.
+	 * @param string $import_id ID of tweet to check.
 	 * @return bool True if tweet has been imported.
 	 */
 	public function has_been_imported( $import_id ) {
-		$check_query = new \WP_Query( [
-			'meta_key'   => 'smolblog_social_import_id',
-			'meta_value' => $import_id,
-		] );
+		$check_query = new \WP_Query(
+			[
+				'meta_key'   => 'smolblog_social_import_id',
+				'meta_value' => $import_id,
+			]
+		);
 
 		return $check_query->found_posts > 0;
 	}
 
+	/**
+	 * Create a post from the given array. Will handle adding reblog and image markup.
+	 *
+	 * @param array $new_post Array of information for the post to insert.
+	 * @return int WordPress ID of the inserted post
+	 * @throws \Exception When errors are encountered.
+	 */
 	public function create_post( $new_post ) {
 		$post_content = $new_post['content'] ?? '';
 
@@ -56,8 +68,6 @@ class CreatePost {
 
 		$args['meta_input']['smolblog_social_import_id'] = $new_post['import_id'];
 
-		// echo esc_html( print_r( array_filter( $args ), true ) );
-		// return;
 		$post_id = wp_insert_post( array_filter( $args ), true );
 
 		if ( is_wp_error( $post_id ) ) {
@@ -87,12 +97,14 @@ class CreatePost {
 			}
 		}
 
-		wp_insert_post( [
-			'ID'           => $post_id,
-			'post_content' => $post_content,
-			'post_status'  => $new_post['status'],
-			'post_date'    => $new_post['date'] ?? null,
-		] );
+		wp_insert_post(
+			[
+				'ID'           => $post_id,
+				'post_content' => $post_content,
+				'post_status'  => $new_post['status'],
+				'post_date'    => $new_post['date'] ?? null,
+			]
+		);
 
 		return $post_id;
 	}
@@ -102,6 +114,7 @@ class CreatePost {
 	 *
 	 * @param string $url Address of the remote media to import.
 	 * @param int    $post_id ID of the WordPress post this media should be attached to.
+	 * @param string $desc Description of the image.
 	 * @return int WordPress ID of imported media.
 	 */
 	private function sideload_media( $url, $post_id, $desc ) {

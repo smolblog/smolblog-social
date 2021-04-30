@@ -54,10 +54,10 @@ class SmolblogMain implements Hookable {
 				get_current_user_id(),
 			)
 		);
-?>
+		?>
 		<h1>Smolblog</h1>
 
-		<?php if ( ! empty ( $_GET['smolblog_action'] ) && 'import_twitter' === $_GET['smolblog_action'] ) : ?>
+		<?php if ( ! empty( $_GET['smolblog_action'] ) && 'import_twitter' === $_GET['smolblog_action'] ) : ?>
 			<h2>Twitter import</h2>
 			<pre>
 			<?php
@@ -72,15 +72,15 @@ class SmolblogMain implements Hookable {
 		<ul>
 		<?php foreach ( $all_accounts as $account ) : ?>
 			<li>
-				<strong>Twitter:</strong> <?php echo $account->social_username; ?>
-				<a href="?page=smolblog&amp;smolblog_action=import_twitter&amp;social_id=<?php echo $account->id; ?>" class="button">Import</a>
+				<strong>Twitter:</strong> <?php echo esc_html( $account->social_username ); ?>
+				<a href="?page=smolblog&amp;smolblog_action=import_twitter&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
 			</li>
 		<?php endforeach; ?>
 		</ul>
 
-		<p>Add new account: <a href="<?php echo get_rest_url( null, 'smolblog/v1/twitter/init' ); ?>?_wpnonce=<?php echo wp_create_nonce( 'wp_rest' ); ?>" class="button">Sign in with Twitter</a></p>
+		<p>Add new account: <a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Twitter</a></p>
 
-		<p>Twitter callback: <code><?php echo get_rest_url( null, 'smolblog/v1/twitter/callback' ); ?></code></p>
-<?php
+		<p>Twitter callback: <code><?php echo esc_html( get_rest_url( null, 'smolblog/v1/twitter/callback' ) ); ?></code></p>
+		<?php
 	}
 }
