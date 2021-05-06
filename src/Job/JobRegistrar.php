@@ -7,7 +7,7 @@
  * @package Smolblog\Social
  */
 
-namespace Smolblog\Social\Endpoint;
+namespace Smolblog\Social\Job;
 
 use WebDevStudios\OopsWP\Structure\Service;
 use Smolblog\Social\Import\Twitter;
@@ -17,7 +17,7 @@ use Smolblog\Social\Import\Twitter;
  *
  * @since 0.1.0
  */
-class EndpointRegistrar extends Service {
+class JobRegistrar extends Service {
 	/**
 	 * Called by Plugin class; register the hooks for this plugin
 	 *
