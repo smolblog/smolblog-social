@@ -44,9 +44,9 @@
 			<property name="is_theme" value="true"/>
 		</properties>
 
-    <!-- Exclude these rules since we are using PSR-4 naming -->
-    <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
-    <exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<!-- Exclude these rules since we are using PSR-4 naming -->
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
 	</rule>
 
 	<!-- Verify that everything in the global namespace is prefixed with a theme specific prefix.
