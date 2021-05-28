@@ -40,5 +40,6 @@ class SmolblogSocial extends Plugin {
 	protected $services = [
 		Endpoint\EndpointRegistrar::class,
 		AdminPage\AdminPageRegistrar::class,
+		Job\JobRegistrar::class,
 	];
 }

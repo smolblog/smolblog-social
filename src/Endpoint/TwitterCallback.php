@@ -81,7 +81,7 @@ class TwitterCallback extends ApiEndpoint {
 		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . $current_user );
 
 		if ( isset( $_REQUEST['oauth_token'] ) && $request_token['oauth_token'] !== $_REQUEST['oauth_token'] ) {
-			wp_die( 'OAuth tokens did not match; <a href="' . get_rest_url( null, 'smolblog/v1/twitter/init' ) . '">try again</a>' );
+			wp_die( 'OAuth tokens did not match; <a href="' . esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ) . '">try again</a>' );
 		}
 
 		$connection = new TwitterOAuth(
