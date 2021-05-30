@@ -41,7 +41,7 @@ class Schema {
 		$sql = "CREATE TABLE $table_name (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
-			social_id varchar(50) NOT NULL,
+			social_type varchar(50) NOT NULL,
 			social_username varchar(50) NOT NULL,
 			oauth_token varchar(255) NOT NULL,
 			oauth_secret varchar(255) NOT NULL, 

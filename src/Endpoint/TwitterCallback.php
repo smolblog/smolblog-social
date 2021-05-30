@@ -97,7 +97,7 @@ class TwitterCallback extends ApiEndpoint {
 			$wpdb->prefix . 'smolblog_social',
 			[
 				'user_id'         => $current_user,
-				'social_id'       => $access_info['user_id'],
+				'social_type'     => 'twitter',
 				'social_username' => $access_info['screen_name'],
 				'oauth_token'     => $access_info['oauth_token'],
 				'oauth_secret'    => $access_info['oauth_token_secret'],
