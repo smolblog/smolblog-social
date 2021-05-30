@@ -72,13 +72,17 @@ class SmolblogMain implements Hookable {
 		<ul>
 		<?php foreach ( $all_accounts as $account ) : ?>
 			<li>
-				<strong>Twitter:</strong> <?php echo esc_html( $account->social_username ); ?>
+				<strong><?php echo esc_html( $account->social_type ); ?>:</strong> <?php echo esc_html( $account->social_username ); ?>
 				<a href="?page=smolblog&amp;smolblog_action=import_twitter&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
 			</li>
 		<?php endforeach; ?>
 		</ul>
 
-		<p>Add new account: <a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Twitter</a></p>
+		<p>
+			Add new account:
+			<a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Twitter</a>
+			<a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/tumblr/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Tumblr</a>
+		</p>
 
 		<p>Twitter callback: <code><?php echo esc_html( get_rest_url( null, 'smolblog/v1/twitter/callback' ) ); ?></code></p>
 		<?php
