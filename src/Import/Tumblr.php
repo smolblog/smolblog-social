@@ -39,8 +39,8 @@ class Tumblr {
 		$client = new TumblrClient(
 			SMOLBLOG_TUMBLR_APPLICATION_KEY,
 			SMOLBLOG_TUMBLR_APPLICATION_SECRET,
-			$access_info['oauth_token'],
-			$access_info['oauth_token_secret']
+			$account_info['oauth_token'],
+			$account_info['oauth_token_secret']
 		);
 
 		$response = $client->getBlogPosts(

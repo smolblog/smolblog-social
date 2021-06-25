@@ -12,6 +12,7 @@ namespace Smolblog\Social\AdminPage;
 use WebDevStudios\OopsWP\Utility\Hookable;
 use Smolblog\Social\Import\Twitter;
 use Smolblog\Social\Import\Tumblr;
+use Tumblr\API\Client as TumblrClient;
 
 /**
  * Registrar class to register our custom post types
@@ -73,7 +74,7 @@ class SmolblogMain implements Hookable {
 			<pre>
 			<?php
 				$importer = new Tumblr();
-				$importer->import_tumblr( $_GET['social_id'], 'paperairplanemob.tumblr.com' );
+				$importer->import_tumblr( $_GET['social_id'], $_GET['blog_url'] );
 			?>
 			</pre>
 		<?php endif; ?>
@@ -84,7 +85,24 @@ class SmolblogMain implements Hookable {
 		<?php foreach ( $all_accounts as $account ) : ?>
 			<li>
 				<strong><?php echo esc_html( $account->social_type ); ?>:</strong> <?php echo esc_html( $account->social_username ); ?>
+				<?php if ( $account->social_type === 'tumblr' ) : ?>
+				<ul>
+					<?php
+						$client = new TumblrClient(
+							SMOLBLOG_TUMBLR_APPLICATION_KEY,
+							SMOLBLOG_TUMBLR_APPLICATION_SECRET,
+							$account->oauth_token,
+							$account->oauth_secret
+						);
+						$blogs  = $client->getUserInfo()->user->blogs;
+					foreach ( $blogs as $blog ) :
+						?>
+					<li><a href="?page=smolblog&amp;smolblog_action=import_tumblr&amp;social_id=<?php echo rawurlencode( $account->id ); ?>&amp;blog_url=<?php echo rawurlencode( wp_parse_url( $blog->url, PHP_URL_HOST ) ); ?>" class="button">Import <?php echo esc_html( $blog->title ); ?> (<?php echo esc_html( $blog->name ); ?>)</a></li>
+					<?php endforeach; ?>
+				</ul>
+				<?php else : ?>
 				<a href="?page=smolblog&amp;smolblog_action=import_<?php echo esc_attr( $account->social_type ); ?>&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
+				<?php endif; ?>
 			</li>
 		<?php endforeach; ?>
 		</ul>
