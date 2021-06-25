@@ -23,7 +23,7 @@ class Tumblr {
 	 * @param string $blog_name Name of blog to import.
 	 * @return void
 	 */
-	public function import_tumblr( $account_id, $blog_name ) {
+	public function import_tumblr( $account_id, $blog_name, $offset = 0 ) {
 		global $wpdb;
 
 		$table_name   = $wpdb->prefix . 'smolblog_social';
@@ -62,7 +62,21 @@ class Tumblr {
 			}
 		}
 
-		print_r( $posts_to_import );
+		$loader = new CreatePost();
+		foreach ( $posts_to_import as $post ) {
+			$post_id = $loader->create_post( $post );
+		}
+
+		if ( ! $all_empty ) {
+			( new JobQueue() )->enqueue_single_job(
+				'smolblog_import_twitter',
+				[
+					$account_id,
+					$blog_name,
+					( $offset + 20 ),
+				]
+			);
+		}
 		die;
 	}
 
