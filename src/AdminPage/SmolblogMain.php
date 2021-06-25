@@ -68,8 +68,8 @@ class SmolblogMain implements Hookable {
 			</pre>
 		<?php endif; ?>
 
-		<?php if ( ! empty( $_GET['smolblog_action'] ) && 'import_twitter' === $_GET['smolblog_action'] ) : ?>
-			<h2>Twitter import</h2>
+		<?php if ( ! empty( $_GET['smolblog_action'] ) && 'import_tumblr' === $_GET['smolblog_action'] ) : ?>
+			<h2>Tumblr import</h2>
 			<pre>
 			<?php
 				$importer = new Tumblr();
@@ -84,7 +84,7 @@ class SmolblogMain implements Hookable {
 		<?php foreach ( $all_accounts as $account ) : ?>
 			<li>
 				<strong><?php echo esc_html( $account->social_type ); ?>:</strong> <?php echo esc_html( $account->social_username ); ?>
-				<a href="?page=smolblog&amp;smolblog_action=import_twitter&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
+				<a href="?page=smolblog&amp;smolblog_action=import_<?php echo esc_attr( $account->social_type ); ?>&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
 			</li>
 		<?php endforeach; ?>
 		</ul>
