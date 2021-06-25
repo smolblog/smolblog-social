@@ -88,14 +88,13 @@ class Tumblr {
 			'date'      => $post->date,
 			'tags'      => $post->tags,
 			'slug'      => $post->slug,
+			'status'    => $this->parse_state( $post->state ),
 			'excerpt'   => $post->summary,
 			'import_id' => $post->id_string,
 			'meta'      => [
 				'tumblr_blocks' => $post->content,
 			],
 		];
-
-		$new_post['status'] = $post->state;
 
 		/*
 			'post_title'   => $new_post['title'] ?? '',
@@ -111,6 +110,20 @@ class Tumblr {
 		*/
 
 		return $new_post;
+	}
+
+	private function parse_state( $state ) {
+		switch ( strtolower( $state ) ) {
+			case 'queued':
+				return 'future';
+			case 'draft':
+				return 'draft';
+			case 'private':
+				return 'private';
+			case 'published':
+				return 'publish';
+		}
+		return 'draft';
 	}
 
 	/**
