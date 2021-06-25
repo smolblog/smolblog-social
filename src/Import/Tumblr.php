@@ -76,7 +76,7 @@ class Tumblr {
 		$check_query = new \WP_Query(
 			[
 				'meta_key'   => 'smolblog_social_import_id',
-				'meta_value' => 'twitter_' . $tumblr_id,
+				'meta_value' => 'tumblr_' . $tumblr_id,
 			]
 		);
 
@@ -90,10 +90,12 @@ class Tumblr {
 			'slug'      => $post->slug,
 			'status'    => $this->parse_state( $post->state ),
 			'excerpt'   => $post->summary,
-			'import_id' => $post->id_string,
+			'import_id' => "tumblr_$post->id_string",
 			'meta'      => [
-				'tumblr_blocks' => $post->content,
+				// 'tumblr_trail' => $post->trail,
 			],
+			'parsed'    => $this->parse_blocks( $post->content ),
+			'reblog'    => $post->reblogged_from_url ?? null,
 		];
 
 		/*
@@ -124,6 +126,55 @@ class Tumblr {
 				return 'publish';
 		}
 		return 'draft';
+	}
+
+	private function parse_blocks( $blocks ) : string {
+		$parsed = '';
+		foreach ( $blocks as $block ) {
+			switch ( strtolower( $block->type ) ) {
+				case 'text':
+					$parsed .= $this->parse_text( $block ) . "\n\n";
+					break;
+				// case 'image':
+				// $parsed .= $this->parse_image( $block ) . "\n\n";
+				// break;
+				// case 'link':
+				// $parsed .= $this->parse_link( $block ) . "\n\n";
+				// break;
+				// case 'audio':
+				// $parsed .= $this->parse_audio( $block ) . "\n\n";
+				// break;
+				// case 'video':
+				// $parsed .= $this->parse_video( $block ) . "\n\n";
+				// break;
+			}
+		}
+		return $parsed;
+	}
+
+	private function parse_text( $block ) : string {
+		if ( ! isset( $block->subtype ) ) {
+			return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
+		}
+		switch ( strtolower( $block->subtype ) ) {
+			case 'heading1':
+				return "<!-- wp:heading {\"level\":1} -->\n<h1>$block->text</h1>\n<!-- /wp:heading -->";
+			case 'heading2':
+				return "<!-- wp:heading -->\n<h2>$block->text</h2>\n<!-- /wp:heading -->";
+			// case 'quirky':
+			// return "";
+			case 'quote':
+				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block->text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
+			case 'indented':
+				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block->text</p></blockquote>\n<!-- /wp:quote -->";
+			case 'chat':
+				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block->text</code></pre>\n<!-- /wp:code -->";
+			// case 'ordered-list-item':
+			// return "";
+			// case 'unordered-list-item':
+			// return "";
+		}
+		return "<!-- wp:paragraph -->\n<p>" . $block->text . "</p>\n<!-- /wp:paragraph -->";
 	}
 
 	/**
