@@ -74,7 +74,7 @@ class CreatePost {
 			throw new \Exception( 'Error creating post: ' . $post_id->get_error_message(), 1 );
 		}
 
-		if ( $new_post['media'] ) {
+		if ( isset( $new_post['media'] ) ) {
 			foreach ( $new_post['media'] as $local_id => $media ) {
 				$wp_id = $this->sideload_media( $media['url'], $post_id, $media['alt'] );
 				$html  = '';
