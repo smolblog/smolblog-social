@@ -39,8 +39,8 @@ class Tumblr {
 		$client = new TumblrClient(
 			SMOLBLOG_TUMBLR_APPLICATION_KEY,
 			SMOLBLOG_TUMBLR_APPLICATION_SECRET,
-			$account_info['oauth_token'],
-			$account_info['oauth_token_secret']
+			$account_info[0]->oauth_token,
+			$account_info[0]->oauth_secret
 		);
 
 		$response = $client->getBlogPosts(
@@ -77,7 +77,6 @@ class Tumblr {
 				]
 			);
 		}
-		die;
 	}
 
 	/**
@@ -99,7 +98,7 @@ class Tumblr {
 
 	private function import_post( $post ) {
 		$new_post = [
-			'date'      => $post->date,
+			'date'      => wp_date( DATE_RFC3339, $post->timestamp ),
 			'tags'      => $post->tags,
 			'slug'      => $post->slug,
 			'status'    => $this->parse_state( $post->state ),
@@ -108,7 +107,7 @@ class Tumblr {
 			'meta'      => [
 				// 'tumblr_trail' => $post->trail,
 			],
-			'parsed'    => $this->parse_blocks( $post->content ),
+			'content'   => $this->parse_blocks( $post->content ),
 			'reblog'    => $post->reblogged_from_url ?? null,
 		];
 
