@@ -23,7 +23,7 @@ class Tumblr {
 	 * @param string $blog_name Name of blog to import.
 	 * @return void
 	 */
-	public function import_tumblr( $account_id, $blog_name, $offset = 0 ) {
+	public function import_tumblr( $account_id, $blog_name, $before = null ) {
 		global $wpdb;
 
 		$table_name   = $wpdb->prefix . 'smolblog_social';
@@ -48,17 +48,19 @@ class Tumblr {
 			[
 				'reblog_info' => true,
 				'npf'         => true,
+				'before'      => $before ?? time(),
 			]
 		);
 
 		$posts_to_import = [];
-		$max_twid        = -1;
+		$last_timestamp  = -1;
 		$all_empty       = true;
 
 		foreach ( $response->posts as $post ) {
 			if ( ! $this->has_been_imported( $post->id ) ) {
 				$posts_to_import[] = $this->import_post( $post );
 				$all_empty         = false;
+				$last_timestamp    = $post->timestamp;
 			}
 		}
 
@@ -73,7 +75,7 @@ class Tumblr {
 				[
 					$account_id,
 					$blog_name,
-					( $offset + 20 ),
+					( $last_timestamp - 1 ),
 				]
 			);
 		}
