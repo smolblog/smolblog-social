@@ -82,10 +82,10 @@ class Tumblr {
 	}
 
 	/**
-	 * Check to see if this tweet is already imported
+	 * Check to see if this post is already imported
 	 *
-	 * @param string $tumblr_id ID of tweet to check.
-	 * @return bool True if tweet has been imported.
+	 * @param string $tumblr_id ID of post to check.
+	 * @return bool True if post has been imported.
 	 */
 	public function has_been_imported( $tumblr_id ) {
 		$check_query = new \WP_Query(
@@ -143,12 +143,18 @@ class Tumblr {
 		return 'draft';
 	}
 
+	private const INDENT_TYPES = [
+		'indented',
+		'ordered-list-item',
+		'unordered-list-item',
+	];
+
 	private function parse_blocks( $blocks ) : string {
 		$parsed = '';
 		foreach ( $blocks as $block ) {
 			switch ( strtolower( $block->type ) ) {
 				case 'text':
-					$parsed .= $this->parse_text( $block ) . "\n\n";
+					$parsed .= $this->parse_text_block( $block ) . "\n\n";
 					break;
 				// case 'image':
 				// $parsed .= $this->parse_image( $block ) . "\n\n";
@@ -167,7 +173,7 @@ class Tumblr {
 		return $parsed;
 	}
 
-	private function parse_text( $block ) : string {
+	private function parse_text_block( $block ) : string {
 		if ( ! isset( $block->subtype ) ) {
 			return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
 		}
@@ -176,20 +182,16 @@ class Tumblr {
 				return "<!-- wp:heading {\"level\":1} -->\n<h1>$block->text</h1>\n<!-- /wp:heading -->";
 			case 'heading2':
 				return "<!-- wp:heading -->\n<h2>$block->text</h2>\n<!-- /wp:heading -->";
-			// case 'quirky':
-			// return "";
+			case 'quirky':
+				return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
 			case 'quote':
 				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block->text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
 			case 'indented':
 				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block->text</p></blockquote>\n<!-- /wp:quote -->";
 			case 'chat':
 				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block->text</code></pre>\n<!-- /wp:code -->";
-			// case 'ordered-list-item':
-			// return "";
-			// case 'unordered-list-item':
-			// return "";
 		}
-		return "<!-- wp:paragraph -->\n<p>" . $block->text . "</p>\n<!-- /wp:paragraph -->";
+		return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
 	}
 
 	/**
