@@ -143,7 +143,7 @@ class Tumblr {
 		return 'draft';
 	}
 
-	private const INDENT_TYPES = [
+	private const indent_types = [
 		'indented',
 		'ordered-list-item',
 		'unordered-list-item',
@@ -151,9 +151,36 @@ class Tumblr {
 
 	private function parse_blocks( $blocks ) : string {
 		$parsed = '';
-		foreach ( $blocks as $block ) {
+
+		$open_indent_tag      = [];
+		$current_indent_level = 0;
+
+		foreach ( $blocks as $block_index => $block ) {
 			switch ( strtolower( $block->type ) ) {
 				case 'text':
+					$subtype = strtolower( $block->subtype ?? '' );
+					$indent  = $block->indent_level ?? 0;
+					if ( in_array( $subtype, $this->indent_types, true ) ) {
+						if ( $subtype !== end( $open_indent_tag ) || $indent > $current_indent_level ) {
+							$parsed .= $this->open_indent_tag( $subtype );
+							array_push( $open_indent_tag );
+							$current_indent_level = $indent;
+						}
+						$parsed .= ( $subtype === 'indent' ) ?
+							"<p>$block->text</p>\n" :
+							"<li>$block->text</li>\n";
+
+						$next_block = $blocks[ $block_index + 1 ] ?? false;
+						if (
+							$next_block && (
+								strtolower( $next_block->subtype ?? '' ) !== $subtype ||
+								( $next_block->indent_level ?? 0 ) !== $indent
+							)
+						) {
+							$parsed .= $this->close_indent_tag( array_pop( $open_indent_tag ) );
+						}
+						break;
+					}
 					$parsed .= $this->parse_text_block( $block ) . "\n\n";
 					break;
 				// case 'image':
@@ -170,7 +197,30 @@ class Tumblr {
 				// break;
 			}
 		}
+
 		return $parsed;
+	}
+
+	private function open_indent_tag( $subtype ) : string {
+		switch ( $subtype ) {
+			case 'indented':
+				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\">\n";
+			case 'unordered-list-item':
+				return "<!-- wp:list -->\n<ul>\n";
+			case 'ordered-list-item':
+				return "<!-- wp:list {\"ordered\":true} -->\n<ol>\n";
+		}
+	}
+
+	private function close_indent_tag( $subtype ) : string {
+		switch ( $subtype ) {
+			case 'indented':
+				return "</blockquote>\n<!-- /wp:quote -->\n\n";
+			case 'unordered-list-item':
+				return "</ul>\n<!-- /wp:list -->\n\n";
+			case 'ordered-list-item':
+				return "</ol>\n<!-- /wp:list -->\n\n";
+		}
 	}
 
 	private function parse_text_block( $block ) : string {
