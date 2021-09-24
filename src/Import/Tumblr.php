@@ -183,8 +183,46 @@ class Tumblr {
 	private function parse_text_block( $block ) : string {
 		$block_text = $block->text;
 
-		if ( isset($block->formatting) && is_array($block->formatting)) {
+		if ( isset( $block->formatting ) && is_array( $block->formatting ) ) {
+			foreach ( $block->formatting as $format ) {
+				$substring = substr( $block_text, $format->start, $format->end - $format->start );
+				$open_tag  = '<span>';
+				$close_tag = '</span>';
 
+				// Using the non-semantic tags here because we do not know the semantic meanting.
+				switch ( strtolower( $format->type ) ) {
+					case 'bold':
+						$open_tag  = '<b>';
+						$close_tag = '</b>';
+						break;
+					case 'italic':
+						$open_tag  = '<i>';
+						$close_tag = '</i>';
+						break;
+					case 'strikethrough':
+						$open_tag  = '<s>';
+						$close_tag = '</s>';
+						break;
+					case 'small':
+						$open_tag  = '<small>';
+						$close_tag = '</small>';
+						break;
+					case 'link':
+						$open_tag  = "<a href=\"$format->url\">";
+						$close_tag = '</a>';
+						break;
+					case 'mention':
+						$open_tag  = "<a href=\"{$format->blog->url}\">";
+						$close_tag = '</a>';
+						break;
+					case 'color':
+						$open_tag  = "<span style=\"color:$format->hex\">";
+						$close_tag = '</span>';
+						break;
+				}
+
+				str_replace( $substring, $open_tag . $substring . $close_tag, $block_text );
+			}
 		}
 
 		if ( ! isset( $block->subtype ) ) {
