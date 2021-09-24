@@ -163,21 +163,31 @@ class Tumblr {
 					break;
 				case 'image':
 					$local_id = count( $media );
-					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#" . "\n\n";
+					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#\n\n";
 					$media[]  = $this->parse_image( $block );
 					break;
 				case 'link':
 					$parsed .= $this->parse_link( $block ) . "\n\n";
 					break;
 				case 'audio':
-					$local_id = count( $media );
-					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#" . "\n\n";
-					$media[]  = $this->parse_audio( $block );
+					$block = $this->parse_audio( $block );
+					if ( is_array( $block ) ) {
+						$local_id = count( $media );
+						$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#\n\n";
+						$media[]  = $block;
+						break;
+					}
+					$parsed .= $block . "\n\n";
 					break;
 				case 'video':
-					$local_id = count( $media );
-					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#" . "\n\n";
-					$media[]  = $this->parse_video( $block );
+					$block = $this->parse_video( $block );
+					if ( is_array( $block ) ) {
+						$local_id = count( $media );
+						$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#\n\n";
+						$media[]  = $block;
+						break;
+					}
+					$parsed .= $block . "\n\n";
 					break;
 			}
 		}
@@ -281,11 +291,33 @@ class Tumblr {
 		return "<!-- wp:heading -->\n<h2><a href=\"$block->url\" data-type=\"URL\" data-id=\"$block->url\">$block->title</a></h2>\n<!-- /wp:heading -->";
 	}
 
-	private function parse_audio( $block ):string {
-		return '<!-- wp:paragraph -->\n<p>Audio block</p>\n<!-- /wp:paragraph -->';
+	private function parse_audio( $block ) {
+		if ( $block->provider === 'tumblr' ) {
+			return [
+				'type' => 'audio',
+				'url'  => $block->media->url,
+			];
+		}
+
+		return '<!-- wp:embed {"url":"' . $block->url . '","type":"rich","className":""} -->
+		<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
+		' . $block->url . '
+		</div></figure>
+		<!-- /wp:embed -->';
 	}
 
-	private function parse_video( $block ):string {
-		return '<!-- wp:paragraph -->\n<p>Video block</p>\n<!-- /wp:paragraph -->';
+	private function parse_video( $block ) {
+		if ( $block->provider === 'tumblr' ) {
+			return [
+				'type' => 'video',
+				'url'  => $block->media->url,
+			];
+		}
+
+		return '<!-- wp:embed {"url":"' . $block->url . '","type":"rich","className":""} -->
+		<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
+		' . $block->url . '
+		</div></figure>
+		<!-- /wp:embed -->';
 	}
 }
