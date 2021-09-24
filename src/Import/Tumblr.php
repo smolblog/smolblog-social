@@ -128,7 +128,7 @@ class Tumblr {
 			$new_post['reblog']
 		*/
 
-		return $new_post;
+		return array_filter( $new_post );
 	}
 
 	private function parse_state( $state ) {
@@ -145,7 +145,7 @@ class Tumblr {
 		return 'draft';
 	}
 
-	private function parse_blocks( $blocks ) : string {
+	private function parse_blocks( $blocks ) : array {
 		$title  = null;
 		$parsed = '';
 
@@ -159,18 +159,18 @@ class Tumblr {
 					}
 					$parsed .= $this->parse_text_block( $block ) . "\n\n";
 					break;
-				// case 'image':
-				// $parsed .= $this->parse_image( $block ) . "\n\n";
-				// break;
-				// case 'link':
-				// $parsed .= $this->parse_link( $block ) . "\n\n";
-				// break;
-				// case 'audio':
-				// $parsed .= $this->parse_audio( $block ) . "\n\n";
-				// break;
-				// case 'video':
-				// $parsed .= $this->parse_video( $block ) . "\n\n";
-				// break;
+				case 'image':
+					$parsed .= $this->parse_image( $block ) . "\n\n";
+					break;
+				case 'link':
+					$parsed .= $this->parse_link( $block ) . "\n\n";
+					break;
+				case 'audio':
+					$parsed .= $this->parse_audio( $block ) . "\n\n";
+					break;
+				case 'video':
+					$parsed .= $this->parse_video( $block ) . "\n\n";
+					break;
 			}
 		}
 
@@ -185,7 +185,7 @@ class Tumblr {
 
 		if ( isset( $block->formatting ) && is_array( $block->formatting ) ) {
 			foreach ( $block->formatting as $format ) {
-				$substring = substr( $block_text, $format->start, $format->end - $format->start );
+				$substring = substr( $block->text, $format->start, $format->end - $format->start );
 				$open_tag  = '<span>';
 				$close_tag = '</span>';
 
@@ -221,7 +221,7 @@ class Tumblr {
 						break;
 				}
 
-				str_replace( $substring, $open_tag . $substring . $close_tag, $block_text );
+				$block_text = str_replace( $substring, $open_tag . $substring . $close_tag, $block_text );
 			}
 		}
 
@@ -249,18 +249,19 @@ class Tumblr {
 		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 	}
 
-	/**
-	 * Convert date in CSV file to 1999-12-31 23:52:00 format
-	 *
-	 * @param string $data Date to convert.
-	 * @return string Formatted date.
-	 */
-	private function parse_date( $data ) {
-		$timestamp = strtotime( $data );
-		if ( false === $timestamp ) {
-				return '';
-		} else {
-				return gmdate( 'Y-m-d H:i:s', $timestamp );
-		}
+	private function parse_image( $block ) : string {
+		return '<!-- wp:paragraph -->\n<p>Image block</p>\n<!-- /wp:paragraph -->';
+	}
+
+	private function parse_link( $block ):string {
+		return '<!-- wp:paragraph -->\n<p>Link block</p>\n<!-- /wp:paragraph -->';
+	}
+
+	private function parse_audio( $block ):string {
+		return '<!-- wp:paragraph -->\n<p>Audio block</p>\n<!-- /wp:paragraph -->';
+	}
+	
+	private function parse_video( $block ):string {
+		return '<!-- wp:paragraph -->\n<p>Video block</p>\n<!-- /wp:paragraph -->';
 	}
 }

@@ -99,6 +99,7 @@ class CreatePost {
 		wp_insert_post(
 			[
 				'ID'           => $post_id,
+				'post_title'   => $args['post_title'],
 				'post_content' => $post_content,
 				'post_status'  => $new_post['status'],
 				'post_date'    => $new_post['date'] ?? null,
