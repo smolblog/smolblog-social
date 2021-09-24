@@ -99,7 +99,9 @@ class Tumblr {
 	}
 
 	private function import_post( $post ) {
-		$new_post = [
+		$parsed_blocks = $this->parse_blocks( $post->content );
+		$new_post      = [
+			'title'     => $parsed_blocks['title'] ?? null,
 			'date'      => wp_date( DATE_RFC3339, $post->timestamp ),
 			'tags'      => $post->tags,
 			'slug'      => $post->slug,
@@ -109,7 +111,7 @@ class Tumblr {
 			'meta'      => [
 				// 'tumblr_trail' => $post->trail,
 			],
-			'content'   => $this->parse_blocks( $post->content ),
+			'content'   => $parsed_blocks['content'],
 			'reblog'    => $post->reblogged_from_url ?? null,
 		];
 
@@ -144,11 +146,17 @@ class Tumblr {
 	}
 
 	private function parse_blocks( $blocks ) : string {
+		$title  = null;
 		$parsed = '';
 
 		foreach ( $blocks as $block_index => $block ) {
 			switch ( strtolower( $block->type ) ) {
 				case 'text':
+					if ( ! $title && isset( $block->subtype ) && 'heading1' === strtolower( $block->subtype ) ) {
+						// If this is the first H1, it's the post's title.
+						$title = $block->text;
+						break;
+					}
 					$parsed .= $this->parse_text_block( $block ) . "\n\n";
 					break;
 				// case 'image':
@@ -166,32 +174,41 @@ class Tumblr {
 			}
 		}
 
-		return $parsed;
+		return [
+			'title'   => $title,
+			'content' => $parsed,
+		];
 	}
 
 	private function parse_text_block( $block ) : string {
+		$block_text = $block->text;
+
+		if ( isset($block->formatting) && is_array($block->formatting)) {
+
+		}
+
 		if ( ! isset( $block->subtype ) ) {
-			return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
+			return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 		}
 		switch ( strtolower( $block->subtype ) ) {
 			case 'heading1':
-				return "<!-- wp:heading {\"level\":1} -->\n<h1>$block->text</h1>\n<!-- /wp:heading -->";
+				return "<!-- wp:heading {\"level\":1} -->\n<h1>$block_text</h1>\n<!-- /wp:heading -->";
 			case 'heading2':
-				return "<!-- wp:heading -->\n<h2>$block->text</h2>\n<!-- /wp:heading -->";
+				return "<!-- wp:heading -->\n<h2>$block_text</h2>\n<!-- /wp:heading -->";
 			case 'quirky':
-				return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
+				return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 			case 'quote':
-				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block->text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
+				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block_text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
 			case 'indented':
-				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block->text</p></blockquote>\n<!-- /wp:quote -->";
+				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block_text</p></blockquote>\n<!-- /wp:quote -->";
 			case 'ordered-list-item':
-				return "<!-- wp:list {\"ordered\":true} -->\n<ol>\n<li>$block->text</li>\n</ol>\n<!-- /wp:list -->\n\n";
+				return "<!-- wp:list {\"ordered\":true} -->\n<ol>\n<li>$block_text</li>\n</ol>\n<!-- /wp:list -->\n\n";
 			case 'unordered-list-item':
-				return "<!-- wp:list -->\n<ul>\n<li>$block->text</li>\n</ul>\n<!-- /wp:list -->\n\n";
+				return "<!-- wp:list -->\n<ul>\n<li>$block_text</li>\n</ul>\n<!-- /wp:list -->\n\n";
 			case 'chat':
-				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block->text</code></pre>\n<!-- /wp:code -->";
+				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block_text</code></pre>\n<!-- /wp:code -->";
 		}
-		return "<!-- wp:paragraph -->\n<p>$block->text</p>\n<!-- /wp:paragraph -->";
+		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 	}
 
 	/**
