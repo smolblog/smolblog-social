@@ -113,6 +113,7 @@ class Tumblr {
 			],
 			'content'   => $parsed_blocks['content'],
 			'reblog'    => $post->reblogged_from_url ?? null,
+			'media'     => $parsed_blocks['media'],
 		];
 
 		/*
@@ -148,6 +149,7 @@ class Tumblr {
 	private function parse_blocks( $blocks ) : array {
 		$title  = null;
 		$parsed = '';
+		$media  = [];
 
 		foreach ( $blocks as $block_index => $block ) {
 			switch ( strtolower( $block->type ) ) {
@@ -160,16 +162,22 @@ class Tumblr {
 					$parsed .= $this->parse_text_block( $block ) . "\n\n";
 					break;
 				case 'image':
-					$parsed .= $this->parse_image( $block ) . "\n\n";
+					$local_id = count( $media );
+					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#" . "\n\n";
+					$media[]  = $this->parse_image( $block );
 					break;
 				case 'link':
 					$parsed .= $this->parse_link( $block ) . "\n\n";
 					break;
 				case 'audio':
-					$parsed .= $this->parse_audio( $block ) . "\n\n";
+					$local_id = count( $media );
+					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#" . "\n\n";
+					$media[]  = $this->parse_audio( $block );
 					break;
 				case 'video':
-					$parsed .= $this->parse_video( $block ) . "\n\n";
+					$local_id = count( $media );
+					$parsed  .= "#SMOLBLOG_MEDIA_IMPORT#{$local_id}#" . "\n\n";
+					$media[]  = $this->parse_video( $block );
 					break;
 			}
 		}
@@ -177,6 +185,7 @@ class Tumblr {
 		return [
 			'title'   => $title,
 			'content' => $parsed,
+			'media'   => $media,
 		];
 	}
 
@@ -249,18 +258,33 @@ class Tumblr {
 		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 	}
 
-	private function parse_image( $block ) : string {
-		return '<!-- wp:paragraph -->\n<p>Image block</p>\n<!-- /wp:paragraph -->';
+	private function parse_image( $block ) : array {
+		$img_size = -1;
+		$img_url  = '#';
+
+		foreach ( $block->media as $img_info ) {
+			if ( $img_size < $img_info->width || $img_size < $img_info->height ) {
+				$img_url  = $img_info->url;
+				$img_size = ( $img_info->width > $img_info->height ) ? $img_info->width : $img_info->height;
+			}
+		}
+
+		return [
+			'type'    => 'image',
+			'url'     => $img_url,
+			'alt'     => $block->alt_text ?? 'Image from tumblr',
+			'caption' => $block->caption ?? null,
+		];
 	}
 
-	private function parse_link( $block ):string {
-		return '<!-- wp:paragraph -->\n<p>Link block</p>\n<!-- /wp:paragraph -->';
+	private function parse_link( $block ) : string {
+		return "<!-- wp:heading -->\n<h2><a href=\"$block->url\" data-type=\"URL\" data-id=\"$block->url\">$block->title</a></h2>\n<!-- /wp:heading -->";
 	}
 
 	private function parse_audio( $block ):string {
 		return '<!-- wp:paragraph -->\n<p>Audio block</p>\n<!-- /wp:paragraph -->';
 	}
-	
+
 	private function parse_video( $block ):string {
 		return '<!-- wp:paragraph -->\n<p>Video block</p>\n<!-- /wp:paragraph -->';
 	}
