@@ -146,6 +146,27 @@ class Tumblr {
 		return 'draft';
 	}
 
+	private function parse_format_tags( $format ) : array {
+		// Using the non-semantic tags here because we do not know the semantic meanting.
+		switch ( strtolower( $format->type ) ) {
+			case 'bold':
+				return [ '<b>', '</b>' ];
+			case 'italic':
+				return [ '<i>', '</i>' ];
+			case 'strikethrough':
+				return [ '<s>', '</s>' ];
+			case 'small':
+				return [ '<small>', '</small>' ];
+			case 'link':
+				return [ "<a href=\"$format->url\">", '</a>' ];
+			case 'mention':
+				return [ "<a href=\"{$format->blog->url}\">", '</a>' ];
+			case 'color':
+				return [ "<span style=\"color:$format->hex\">", '</span>' ];
+		}
+		return [ '<span>', '</span>' ];
+	}
+
 	private function parse_blocks( $blocks ) : array {
 		$title  = null;
 		$parsed = '';
@@ -227,48 +248,17 @@ class Tumblr {
 	}
 
 	private function parse_text_formatting( $block ) : string {
+		if ( ! isset( $block->formatting ) || ! is_array( $block->formatting ) ) {
+			return $block->text;
+		}
+
 		$block_text = $block->text;
 
-		if ( isset( $block->formatting ) && is_array( $block->formatting ) ) {
-			foreach ( $block->formatting as $format ) {
-				$substring = substr( $block->text, $format->start, $format->end - $format->start );
-				$open_tag  = '<span>';
-				$close_tag = '</span>';
+		foreach ( $block->formatting as $format ) {
+			$substring              = substr( $block->text, $format->start, $format->end - $format->start );
+			[$open_tag, $close_tag] = $this->parse_format_tags( $format );
 
-				// Using the non-semantic tags here because we do not know the semantic meanting.
-				switch ( strtolower( $format->type ) ) {
-					case 'bold':
-						$open_tag  = '<b>';
-						$close_tag = '</b>';
-						break;
-					case 'italic':
-						$open_tag  = '<i>';
-						$close_tag = '</i>';
-						break;
-					case 'strikethrough':
-						$open_tag  = '<s>';
-						$close_tag = '</s>';
-						break;
-					case 'small':
-						$open_tag  = '<small>';
-						$close_tag = '</small>';
-						break;
-					case 'link':
-						$open_tag  = "<a href=\"$format->url\">";
-						$close_tag = '</a>';
-						break;
-					case 'mention':
-						$open_tag  = "<a href=\"{$format->blog->url}\">";
-						$close_tag = '</a>';
-						break;
-					case 'color':
-						$open_tag  = "<span style=\"color:$format->hex\">";
-						$close_tag = '</span>';
-						break;
-				}
-
-				$block_text = str_replace( $substring, $open_tag . $substring . $close_tag, $block_text );
-			}
+			$block_text = str_replace( $substring, $open_tag . $substring . $close_tag, $block_text );
 		}
 
 		return $block_text;
