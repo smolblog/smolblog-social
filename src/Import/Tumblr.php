@@ -200,6 +200,33 @@ class Tumblr {
 	}
 
 	private function parse_text_block( $block ) : string {
+		$block_text = $this->parse_text_formatting( $block );
+
+		if ( ! isset( $block->subtype ) ) {
+			return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
+		}
+		switch ( strtolower( $block->subtype ) ) {
+			case 'heading1':
+				return "<!-- wp:heading {\"level\":1} -->\n<h1>$block_text</h1>\n<!-- /wp:heading -->";
+			case 'heading2':
+				return "<!-- wp:heading -->\n<h2>$block_text</h2>\n<!-- /wp:heading -->";
+			case 'quirky':
+				return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
+			case 'quote':
+				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block_text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
+			case 'indented':
+				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block_text</p></blockquote>\n<!-- /wp:quote -->";
+			case 'ordered-list-item':
+				return "<!-- wp:list {\"ordered\":true} -->\n<ol>\n<li>$block_text</li>\n</ol>\n<!-- /wp:list -->\n\n";
+			case 'unordered-list-item':
+				return "<!-- wp:list -->\n<ul>\n<li>$block_text</li>\n</ul>\n<!-- /wp:list -->\n\n";
+			case 'chat':
+				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block_text</code></pre>\n<!-- /wp:code -->";
+		}
+		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
+	}
+
+	private function parse_text_formatting( $block ) : string {
 		$block_text = $block->text;
 
 		if ( isset( $block->formatting ) && is_array( $block->formatting ) ) {
@@ -244,28 +271,7 @@ class Tumblr {
 			}
 		}
 
-		if ( ! isset( $block->subtype ) ) {
-			return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
-		}
-		switch ( strtolower( $block->subtype ) ) {
-			case 'heading1':
-				return "<!-- wp:heading {\"level\":1} -->\n<h1>$block_text</h1>\n<!-- /wp:heading -->";
-			case 'heading2':
-				return "<!-- wp:heading -->\n<h2>$block_text</h2>\n<!-- /wp:heading -->";
-			case 'quirky':
-				return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
-			case 'quote':
-				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block_text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
-			case 'indented':
-				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block_text</p></blockquote>\n<!-- /wp:quote -->";
-			case 'ordered-list-item':
-				return "<!-- wp:list {\"ordered\":true} -->\n<ol>\n<li>$block_text</li>\n</ol>\n<!-- /wp:list -->\n\n";
-			case 'unordered-list-item':
-				return "<!-- wp:list -->\n<ul>\n<li>$block_text</li>\n</ul>\n<!-- /wp:list -->\n\n";
-			case 'chat':
-				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block_text</code></pre>\n<!-- /wp:code -->";
-		}
-		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
+		return $block_text;
 	}
 
 	private function parse_image( $block ) : array {
