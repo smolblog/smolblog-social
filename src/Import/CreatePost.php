@@ -40,7 +40,7 @@ class CreatePost {
 	public function create_post( $new_post ) {
 		$post_content = $new_post['content'] ?? '';
 
-		if ( $new_post['reblog'] ) {
+		if ( ! empty( $new_post['reblog'] ) ) {
 			$new_post['meta']['smolblog_is_reblog']  = true;
 			$new_post['meta']['smolblog_reblog_url'] = $new_post['reblog'];
 
@@ -62,8 +62,8 @@ class CreatePost {
 			'post_status'  => 'draft',
 			'post_name'    => $new_post['slug'] ?? null,
 			'post_author'  => $new_post['author'] ?? get_current_user_id(),
-			'tags_input'   => $new_post['tags'],
-			'meta_input'   => $new_post['meta'],
+			'tags_input'   => $new_post['tags'] ?? null,
+			'meta_input'   => $new_post['meta'] ?? null,
 		];
 
 		$args['meta_input']['smolblog_social_import_id'] = $new_post['import_id'];
