@@ -252,13 +252,29 @@ class Tumblr {
 			return $block->text;
 		}
 
-		$block_text = $block->text;
+		$opening_tags = [];
+		$closing_tags = [];
 
 		foreach ( $block->formatting as $format ) {
-			$substring              = substr( $block->text, $format->start, $format->end - $format->start );
 			[$open_tag, $close_tag] = $this->parse_format_tags( $format );
 
-			$block_text = str_replace( $substring, $open_tag . $substring . $close_tag, $block_text );
+			$existing_open_tag              = $opening_tags[ $format->start ] ?? '';
+			$opening_tags[ $format->start ] = $existing_open_tag . $open_tag;
+
+			$existing_close_tag           = $closing_tags[ $format->end ] ?? '';
+			$closing_tags[ $format->end ] = $close_tag . $existing_close_tag;
+		}
+
+		$block_text  = '';
+		$text_length = iconv_strlen( $block->text );
+		for ( $i = 0; $i < $text_length; $i++ ) {
+			if ( isset( $opening_tags[ $i ] ) ) {
+				$block_text .= $opening_tags[ $i ];
+			}
+			$block_text .= $block->text[ $i ];
+			if ( isset( $closing_tags[ $i ] ) ) {
+				$block_text .= $closing_tags[ $i ];
+			}
 		}
 
 		return $block_text;
