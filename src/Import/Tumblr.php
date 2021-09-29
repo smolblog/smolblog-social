@@ -261,8 +261,8 @@ class Tumblr {
 			$existing_open_tag              = $opening_tags[ $format->start ] ?? '';
 			$opening_tags[ $format->start ] = $existing_open_tag . $open_tag;
 
-			$existing_close_tag           = $closing_tags[ $format->end ] ?? '';
-			$closing_tags[ $format->end ] = $close_tag . $existing_close_tag;
+			$existing_close_tag               = $closing_tags[ $format->end - 1 ] ?? '';
+			$closing_tags[ $format->end - 1 ] = $close_tag . $existing_close_tag;
 		}
 
 		$block_text  = '';
