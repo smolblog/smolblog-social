@@ -304,31 +304,33 @@ class Tumblr {
 	}
 
 	private function parse_audio( $block ) {
-		if ( $block->provider === 'tumblr' ) {
+		$media = $block->media;
+		if ( isset( $media->provider ) && $media->provider === 'tumblr' ) {
 			return [
 				'type' => 'audio',
-				'url'  => $block->media->url,
+				'url'  => $media->url,
 			];
 		}
 
-		return '<!-- wp:embed {"url":"' . $block->url . '","type":"rich","className":""} -->
+		return '<!-- wp:embed {"url":"' . $media->url . '","type":"rich","className":""} -->
 		<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
-		' . $block->url . '
+		' . $media->url . '
 		</div></figure>
 		<!-- /wp:embed -->';
 	}
 
 	private function parse_video( $block ) {
-		if ( $block->provider === 'tumblr' ) {
+		$media = $block->media;
+		if ( isset( $media->provider ) && $media->provider === 'tumblr' ) {
 			return [
 				'type' => 'video',
-				'url'  => $block->media->url,
+				'url'  => $media->url,
 			];
 		}
 
-		return '<!-- wp:embed {"url":"' . $block->url . '","type":"rich","className":""} -->
+		return '<!-- wp:embed {"url":"' . $media->url . '","type":"rich","className":""} -->
 		<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
-		' . $block->url . '
+		' . $media->url . '
 		</div></figure>
 		<!-- /wp:embed -->';
 	}
