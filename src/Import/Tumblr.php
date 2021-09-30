@@ -252,29 +252,28 @@ class Tumblr {
 			return $block->text;
 		}
 
-		$opening_tags = [];
-		$closing_tags = [];
-
+		$inserts = [];
 		foreach ( $block->formatting as $format ) {
 			[$open_tag, $close_tag] = $this->parse_format_tags( $format );
 
-			$existing_open_tag              = $opening_tags[ $format->start ] ?? '';
-			$opening_tags[ $format->start ] = $existing_open_tag . $open_tag;
+			$existing_open_tag         = $inserts[ $format->start ] ?? '';
+			$inserts[ $format->start ] = $existing_open_tag . $open_tag;
 
-			$existing_close_tag               = $closing_tags[ $format->end - 1 ] ?? '';
-			$closing_tags[ $format->end - 1 ] = $close_tag . $existing_close_tag;
+			$existing_close_tag      = $inserts[ $format->end ] ?? '';
+			$inserts[ $format->end ] = $close_tag . $existing_close_tag;
 		}
 
-		$block_text  = '';
-		$text_length = iconv_strlen( $block->text );
-		for ( $i = 0; $i < $text_length; $i++ ) {
-			if ( isset( $opening_tags[ $i ] ) ) {
-				$block_text .= $opening_tags[ $i ];
-			}
-			$block_text .= $block->text[ $i ];
-			if ( isset( $closing_tags[ $i ] ) ) {
-				$block_text .= $closing_tags[ $i ];
-			}
+		$formatted_text = '';
+		$cursor         = 0;
+		$stops          = array_keys( $inserts );
+
+		foreach ( $stops as $stop ) {
+			$formatted_text .= mb_substr( $block->text, $cursor, ( $stop - $cursor ) );
+			$formatted_text .= $inserts[ $stop ];
+			$cursor          = $stop;
+		}
+		if ( $cursor < mb_strlen( $block->text ) ) {
+			$formatted_text .= mb_substr( $block->text, $cursor );
 		}
 
 		return $block_text;
