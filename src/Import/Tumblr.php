@@ -276,7 +276,7 @@ class Tumblr {
 			$formatted_text .= mb_substr( $block->text, $cursor );
 		}
 
-		return $block_text;
+		return $formatted_text;
 	}
 
 	private function parse_image( $block ) : array {
