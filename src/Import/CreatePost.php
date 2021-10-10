@@ -76,7 +76,8 @@ class CreatePost {
 
 		if ( isset( $new_post['media'] ) ) {
 			foreach ( $new_post['media'] as $local_id => $media ) {
-				$wp_id = $this->sideload_media( $media['url'], $post_id, $media['alt'] );
+				$alt   = isset( $media['alt'] ) ? $media['alt'] : '';
+				$wp_id = $this->sideload_media( $media['url'], $post_id, $alt );
 				$html  = '';
 
 				switch ( $media['type'] ) {
@@ -89,6 +90,11 @@ class CreatePost {
 						$html = '<!-- wp:video {"id":' . $wp_id . '} -->
 						<figure class="wp-block-video"><video controls ' . ( $media['atts'] ?? '' ) . 'preload="auto" src="' . wp_get_attachment_url( $wp_id ) . '"></video></figure>
 						<!-- /wp:video -->';
+						break;
+					case 'audio':
+						$html = '<!-- wp:audio {"id":' . $wp_id . '} -->
+						<figure class="wp-block-audio"><audio controls ' . ( $media['atts'] ?? '' ) . 'preload="auto" src="' . wp_get_attachment_url( $wp_id ) . '"></audio></figure>
+						<!-- /wp:audio -->';
 						break;
 				}
 
@@ -126,7 +132,7 @@ class CreatePost {
 
 		// Set variables for storage
 		// fix file filename for query strings.
-		preg_match( '/[^\?]+\.(jpg|jpe|jpeg|gif|png|mp4|m4v)/i', $url, $matches );
+		preg_match( '/[^\?]+\.(jpg|jpe|jpeg|gif|png|mp4|m4v|mp3)/i', $url, $matches );
 
 		$file_array['name']     = basename( $matches[0] );
 		$file_array['tmp_name'] = $tmp;
