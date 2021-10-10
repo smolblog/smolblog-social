@@ -71,7 +71,7 @@ class Tumblr {
 
 		if ( ! $all_empty ) {
 			( new JobQueue() )->enqueue_single_job(
-				'smolblog_import_twitter',
+				'smolblog_import_tumblr',
 				[
 					$account_id,
 					$blog_name,
