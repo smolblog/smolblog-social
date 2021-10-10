@@ -303,33 +303,31 @@ class Tumblr {
 	}
 
 	private function parse_audio( $block ) {
-		$media = $block->media;
-		if ( isset( $media->provider ) && $media->provider === 'tumblr' ) {
+		if ( isset( $block->provider ) && $block->provider === 'tumblr' ) {
 			return [
 				'type' => 'audio',
-				'url'  => $media->url,
+				'url'  => $block->media->url,
 			];
 		}
 
-		return '<!-- wp:embed {"url":"' . $media->url . '","type":"rich","className":""} -->
+		return '<!-- wp:embed {"url":"' . $block->url . '","type":"rich","className":""} -->
 		<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
-		' . $media->url . '
+		' . $block->url . '
 		</div></figure>
 		<!-- /wp:embed -->';
 	}
 
 	private function parse_video( $block ) {
-		$media = $block->media;
-		if ( isset( $media->provider ) && $media->provider === 'tumblr' ) {
+		if ( isset( $block->provider ) && $block->provider === 'tumblr' ) {
 			return [
 				'type' => 'video',
-				'url'  => $media->url,
+				'url'  => $block->media->url,
 			];
 		}
 
-		return '<!-- wp:embed {"url":"' . $media->url . '","type":"rich","className":""} -->
+		return '<!-- wp:embed {"url":"' . $block->url . '","type":"rich","className":""} -->
 		<figure class="wp-block-embed is-type-rich"><div class="wp-block-embed__wrapper">
-		' . $media->url . '
+		' . $block->url . '
 		</div></figure>
 		<!-- /wp:embed -->';
 	}
