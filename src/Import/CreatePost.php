@@ -9,6 +9,14 @@
 
 namespace Smolblog\Social\Import;
 
+// If the file functions are not available, require them.
+if ( ! function_exists( 'download_url' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+}
+if ( ! function_exists( 'media_handle_sideload' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/media.php';
+}
+
 /**
  * Create a WordPress post from the import information
  */
