@@ -21,6 +21,7 @@ class Tumblr {
 	 *
 	 * @param int    $account_id Database ID of the account to import.
 	 * @param string $blog_name Name of blog to import.
+	 * @param int    $before Unix timestamp to start at.
 	 * @return void
 	 */
 	public function import_tumblr( $account_id, $blog_name, $before = null ) {
@@ -98,6 +99,12 @@ class Tumblr {
 		return $check_query->found_posts > 0;
 	}
 
+	/**
+	 * Parse a tumblr post object for use by a CreatePost object
+	 *
+	 * @param object $post Parsed object from the Tumblr API.
+	 * @return array Associative array for CreatePost
+	 */
 	private function import_post( $post ) {
 		$parsed_blocks = $this->parse_blocks( $post->content );
 		$new_post      = [
@@ -108,30 +115,21 @@ class Tumblr {
 			'status'    => $this->parse_state( $post->state ),
 			'excerpt'   => $post->summary,
 			'import_id' => "tumblr_$post->id_string",
-			'meta'      => [
-				// 'tumblr_trail' => $post->trail,
-			],
+			'meta'      => [],
 			'content'   => $parsed_blocks['content'],
 			'reblog'    => $post->reblogged_from_url ?? null,
 			'media'     => $parsed_blocks['media'],
 		];
 
-		/*
-			'post_title'   => $new_post['title'] ?? '',
-			'post_content' => $new_post['content'],
-			'post_date'    => $new_post['date'] ?? null,
-			'post_excerpt' => $new_post['excerpt'] ?? null,
-			'post_name'    => $new_post['slug'] ?? null,
-			'post_author'  => $new_post['author'] ?? get_current_user_id(),
-			'tags_input'   => $new_post['tags'],
-			'meta_input'   => $new_post['meta'],
-			$new_post['import_id']
-			$new_post['reblog']
-		*/
-
 		return array_filter( $new_post );
 	}
 
+	/**
+	 * Translate a Tumblr state into a WordPress state
+	 *
+	 * @param string $state State from the Tumblr API.
+	 * @return string State for WordPress
+	 */
 	private function parse_state( $state ) {
 		switch ( strtolower( $state ) ) {
 			case 'queued':
@@ -146,6 +144,12 @@ class Tumblr {
 		return 'draft';
 	}
 
+	/**
+	 * Translate a given Tumblr format into HTML tags.
+	 *
+	 * @param object $format Format object from the Tumblr API.
+	 * @return array Array of two strings containing the opening and closing HTML tags.
+	 */
 	private function parse_format_tags( $format ) : array {
 		// Using the non-semantic tags here because we do not know the semantic meanting.
 		switch ( strtolower( $format->type ) ) {
@@ -167,6 +171,12 @@ class Tumblr {
 		return [ '<span>', '</span>' ];
 	}
 
+	/**
+	 * Translate Tumblr NPF blocks into WordPress blocks
+	 *
+	 * @param Array $blocks Array of blocks from the Tumblr API.
+	 * @return array Three variables: title, content, and media array.
+	 */
 	private function parse_blocks( $blocks ) : array {
 		$title  = null;
 		$parsed = '';
@@ -220,6 +230,12 @@ class Tumblr {
 		];
 	}
 
+	/**
+	 * Translate a Tumblr text block into a WordPress block
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @return string WordPress block for a Block Editor (Gutenberg) post.
+	 */
 	private function parse_text_block( $block ) : string {
 		$block_text = $this->parse_text_formatting( $block );
 
@@ -247,6 +263,12 @@ class Tumblr {
 		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 	}
 
+	/**
+	 * Apply any formatting objects to the block's text as HTML tags
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @return string HTML-formatted text from the block.
+	 */
 	private function parse_text_formatting( $block ) : string {
 		if ( ! isset( $block->formatting ) || ! is_array( $block->formatting ) ) {
 			return $block->text;
@@ -279,6 +301,12 @@ class Tumblr {
 		return $formatted_text;
 	}
 
+	/**
+	 * Translate an image block into a WordPress block.
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @return array Image data to be given to CreatePost
+	 */
 	private function parse_image( $block ) : array {
 		$img_size = -1;
 		$img_url  = '#';
@@ -298,10 +326,23 @@ class Tumblr {
 		];
 	}
 
+	/**
+	 * Translate a link block into a WordPress block
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @return string Block for a WordPress post.
+	 */
 	private function parse_link( $block ) : string {
 		return "<!-- wp:heading -->\n<h2><a href=\"$block->url\" data-type=\"URL\" data-id=\"$block->url\">$block->title</a></h2>\n<!-- /wp:heading -->";
 	}
 
+	/**
+	 * Translate an audio block into a WordPress block. Native Tumblr audio is marked for sideloading.
+	 * Off-site audio (soundcloud, spotify) is embedded with oEmbed.
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @return string|array String for embedded audio, array for sideloaded audio
+	 */
 	private function parse_audio( $block ) {
 		if ( isset( $block->provider ) && $block->provider === 'tumblr' ) {
 			return [
@@ -317,6 +358,13 @@ class Tumblr {
 		<!-- /wp:embed -->';
 	}
 
+	/**
+	 * Translate an video block into a WordPress block. Native Tumblr video is marked for sideloading.
+	 * Off-site video (YouTube, Vimeo) is embedded with oEmbed.
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @return string|array String for embedded video, array for sideloaded video
+	 */
 	private function parse_video( $block ) {
 		if ( isset( $block->provider ) && $block->provider === 'tumblr' ) {
 			return [
