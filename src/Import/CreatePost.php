@@ -132,6 +132,13 @@ class CreatePost {
 	 * @return int WordPress ID of imported media.
 	 */
 	private function sideload_media( $url, $post_id, $desc ) {
+		if ( ! function_exists( 'wp_crop_image' ) ) {
+			include_once ABSPATH . 'wp-admin/includes/image.php';
+		}
+		if ( ! function_exists( 'media_handle_sideload' ) ) {
+			include_once ABSPATH . 'wp-admin/includes/media.php';
+		}
+
 		$tmp = download_url( $url );
 		if ( is_wp_error( $tmp ) ) {
 			return $tmp;
