@@ -1,4 +1,4 @@
-<?php //phpcs:ignore Wordpress.Files.Filename
+<?php
 /**
  * Endpoint Registrar for the plugin
  *
@@ -29,6 +29,8 @@ class EndpointRegistrar extends Service {
 	protected $endpoints = [
 		TwitterInit::class,
 		TwitterCallback::class,
+		TumblrInit::class,
+		TumblrCallback::class,
 	];
 
 	/**

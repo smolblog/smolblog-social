@@ -1,6 +1,6 @@
 <?php
 /**
- * Endpoint for the Twitter OAuth Callback
+ * Endpoint for the Tumblr OAuth Callback
  *
  * @since 0.1.0
  * @package Smolblog\Social
@@ -9,7 +9,7 @@
 namespace Smolblog\Social\Endpoint;
 
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
-use Abraham\TwitterOAuth\TwitterOAuth;
+use Tumblr\API\Client as TumblrClient;
 use \WP_REST_Request;
 
 /**
@@ -17,7 +17,7 @@ use \WP_REST_Request;
  *
  * @since 0.1.0
  */
-class TwitterCallback extends ApiEndpoint {
+class TumblrCallback extends ApiEndpoint {
 	/**
 	 * Namespace for this endpoint
 	 *
@@ -32,7 +32,7 @@ class TwitterCallback extends ApiEndpoint {
 	 * @since 2019-05-01
 	 * @var   string
 	 */
-	protected $route = '/twitter/callback';
+	protected $route = '/tumblr/callback';
 
 	/**
 	 * Set up the arguments for this REST endpoint
@@ -78,27 +78,52 @@ class TwitterCallback extends ApiEndpoint {
 			return;
 		}
 		$current_user  = get_current_user_id();
-		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . $current_user );
+		$request_token = get_transient( 'smolblog_tumblr_oauth_request_' . $current_user );
 
-		if ( isset( $_REQUEST['oauth_token'] ) && $request_token['oauth_token'] !== $_REQUEST['oauth_token'] ) {
-			wp_die( 'OAuth tokens did not match; <a href="' . esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ) . '">try again</a>' );
+		if ( isset( $request['oauth_token'] ) && $request_token['oauth_token'] !== $request['oauth_token'] ) {
+			wp_die(
+				'OAuth tokens did not match; <a href="' .
+				esc_attr( get_rest_url( null, 'smolblog/v1/tumblr/init' ) ) .
+				'?_wpnonce=' . esc_attr( wp_create_nonce( 'wp_rest' ) ) .
+				'">try again</a>'
+			);
 		}
 
-		$connection = new TwitterOAuth(
-			SMOLBLOG_TWITTER_APPLICATION_KEY,
-			SMOLBLOG_TWITTER_APPLICATION_SECRET,
+		$client          = new TumblrClient(
+			SMOLBLOG_TUMBLR_APPLICATION_KEY,
+			SMOLBLOG_TUMBLR_APPLICATION_SECRET,
 			$request_token['oauth_token'],
 			$request_token['oauth_token_secret']
 		);
+		$request_handler = $client->getRequestHandler();
+		$request_handler->setBaseUrl( 'https://www.tumblr.com/' );
 
-		$access_info = $connection->oauth( 'oauth/access_token', [ 'oauth_verifier' => $_REQUEST['oauth_verifier'] ] );
+		$resp = $request_handler->request(
+			'POST',
+			'oauth/access_token',
+			[
+				'oauth_verifier' => $request['oauth_verifier'],
+			]
+		);
+
+		$out         = $resp->body;
+		$access_info = [];
+		parse_str( $out, $access_info );
+
+		$client = new TumblrClient(
+			SMOLBLOG_TUMBLR_APPLICATION_KEY,
+			SMOLBLOG_TUMBLR_APPLICATION_SECRET,
+			$access_info['oauth_token'],
+			$access_info['oauth_token_secret']
+		);
+		$user   = $client->getUserInfo()->user;
 
 		$wpdb->insert(
 			$wpdb->prefix . 'smolblog_social',
 			[
 				'user_id'         => $current_user,
-				'social_type'     => 'twitter',
-				'social_username' => $access_info['screen_name'],
+				'social_type'     => 'tumblr',
+				'social_username' => $user->name,
 				'oauth_token'     => $access_info['oauth_token'],
 				'oauth_secret'    => $access_info['oauth_token_secret'],
 			],

@@ -1,6 +1,6 @@
 <?php
 /**
- * Endpoint for the Twitter OAuth Init
+ * Endpoint for the tumblr OAuth Init
  *
  * @since 0.1.0
  * @package Smolblog\Social
@@ -9,7 +9,7 @@
 namespace Smolblog\Social\Endpoint;
 
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
-use Abraham\TwitterOAuth\TwitterOAuth;
+use Tumblr\API\Client as TumblrClient;
 use \WP_REST_Request;
 
 /**
@@ -17,7 +17,7 @@ use \WP_REST_Request;
  *
  * @since 0.1.0
  */
-class TwitterInit extends ApiEndpoint {
+class TumblrInit extends ApiEndpoint {
 	/**
 	 * Namespace for this endpoint
 	 *
@@ -32,7 +32,7 @@ class TwitterInit extends ApiEndpoint {
 	 * @since 2019-05-01
 	 * @var   string
 	 */
-	protected $route = '/twitter/init';
+	protected $route = '/tumblr/init';
 
 	/**
 	 * Set up the arguments for this REST endpoint
@@ -77,16 +77,23 @@ class TwitterInit extends ApiEndpoint {
 		}
 
 		$current_user = get_current_user_id();
-		$callback_url = get_rest_url( null, 'smolblog/v1/twitter/callback' ) . '?_wpnonce=' . wp_create_nonce( 'wp_rest' );
-		$connection   = new TwitterOAuth( SMOLBLOG_TWITTER_APPLICATION_KEY, SMOLBLOG_TWITTER_APPLICATION_SECRET );
+		$callback_url = get_rest_url( null, 'smolblog/v1/tumblr/callback' ) . '?_wpnonce=' . wp_create_nonce( 'wp_rest' );
 
-		$request_token = $connection->oauth( 'oauth/request_token', array( 'oauth_callback' => $callback_url ) );
+		$client          = new TumblrClient( SMOLBLOG_TUMBLR_APPLICATION_KEY, SMOLBLOG_TUMBLR_APPLICATION_SECRET );
+		$request_handler = $client->getRequestHandler();
+		$request_handler->setBaseUrl( 'https://www.tumblr.com/' );
 
-		set_transient( 'smolblog_twitter_oauth_request_' . $current_user, $request_token, 5 * MINUTE_IN_SECONDS );
+		$resp = $request_handler->request( 'POST', 'oauth/request_token', [ 'oauth_callback' => $callback_url ] );
 
-		$url = $connection->url( 'oauth/authorize', array( 'oauth_token' => $request_token['oauth_token'] ) );
+		$out  = $resp->body;
+		$data = array();
+		parse_str( $out, $data );
 
-		header( 'Location: ' . $url, true, 302 );
+		set_transient( 'smolblog_tumblr_oauth_request_' . $current_user, $data, 5 * MINUTE_IN_SECONDS );
+
+		// Redirect to the login.
+		header( 'Location: https://www.tumblr.com/oauth/authorize?oauth_token=' . $data['oauth_token'], true, 302 );
+
 		die;
 	}
 }

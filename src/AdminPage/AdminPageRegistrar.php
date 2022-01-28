@@ -1,4 +1,4 @@
-<?php //phpcs:ignore Wordpress.Files.Filename
+<?php
 /**
  * Admin page Registrar for the plugin
  *

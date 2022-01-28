@@ -1,4 +1,4 @@
-<?php //phpcs:ignore Wordpress.Files.Filename
+<?php
 /**
  * Main admin page for this plugin
  *
@@ -11,6 +11,8 @@ namespace Smolblog\Social\AdminPage;
 
 use WebDevStudios\OopsWP\Utility\Hookable;
 use Smolblog\Social\Import\Twitter;
+use Smolblog\Social\Import\Tumblr;
+use Tumblr\API\Client as TumblrClient;
 
 /**
  * Registrar class to register our custom post types
@@ -67,18 +69,49 @@ class SmolblogMain implements Hookable {
 			</pre>
 		<?php endif; ?>
 
+		<?php if ( ! empty( $_GET['smolblog_action'] ) && 'import_tumblr' === $_GET['smolblog_action'] ) : ?>
+			<h2>Tumblr import</h2>
+			<pre>
+			<?php
+				$importer = new Tumblr();
+				$importer->import_tumblr( $_GET['social_id'], $_GET['blog_url'] );
+			?>
+			</pre>
+		<?php endif; ?>
+
 		<h2>Connected social accounts:</h2>
 
 		<ul>
 		<?php foreach ( $all_accounts as $account ) : ?>
 			<li>
-				<strong>Twitter:</strong> <?php echo esc_html( $account->social_username ); ?>
-				<a href="?page=smolblog&amp;smolblog_action=import_twitter&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
+				<strong><?php echo esc_html( $account->social_type ); ?>:</strong> <?php echo esc_html( $account->social_username ); ?>
+				<?php if ( $account->social_type === 'tumblr' ) : ?>
+				<ul>
+					<?php
+						$client = new TumblrClient(
+							SMOLBLOG_TUMBLR_APPLICATION_KEY,
+							SMOLBLOG_TUMBLR_APPLICATION_SECRET,
+							$account->oauth_token,
+							$account->oauth_secret
+						);
+						$blogs  = $client->getUserInfo()->user->blogs;
+					foreach ( $blogs as $blog ) :
+						?>
+					<li><a href="?page=smolblog&amp;smolblog_action=import_tumblr&amp;social_id=<?php echo rawurlencode( $account->id ); ?>&amp;blog_url=<?php echo rawurlencode( wp_parse_url( $blog->url, PHP_URL_HOST ) ); ?>" class="button">Import <?php echo esc_html( $blog->title ); ?> (<?php echo esc_html( $blog->name ); ?>)</a></li>
+					<?php endforeach; ?>
+				</ul>
+				<?php else : ?>
+				<a href="?page=smolblog&amp;smolblog_action=import_<?php echo esc_attr( $account->social_type ); ?>&amp;social_id=<?php echo esc_attr( $account->id ); ?>" class="button">Import</a>
+				<?php endif; ?>
 			</li>
 		<?php endforeach; ?>
 		</ul>
 
-		<p>Add new account: <a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Twitter</a></p>
+		<p>
+			Add new account:
+			<a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Twitter</a>
+			<a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/tumblr/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Tumblr</a>
+		</p>
 
 		<p>Twitter callback: <code><?php echo esc_html( get_rest_url( null, 'smolblog/v1/twitter/callback' ) ); ?></code></p>
 		<?php
