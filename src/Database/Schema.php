@@ -24,7 +24,7 @@ class Schema {
 	 *
 	 * @var int $db_version
 	 */
-	private $db_version = 1;
+	private $db_version = 2;
 
 	/**
 	 * Create table for storing social account information.
