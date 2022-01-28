@@ -34,6 +34,7 @@ add_action(
 	'plugins_loaded',
 	function() {
 		try {
+			update_database();
 			( new SmolblogSocial( __FILE__ ) )->run();
 		} catch ( Error $e ) {
 			add_action(
@@ -51,10 +52,14 @@ add_action(
 	}
 );
 
-register_activation_hook(
-	__FILE__,
-	function() {
+/**
+ * Check the database version and update if needed.
+ */
+function update_database() {
+	if ( get_option( 'smolblog_social_db_version', 0 ) < Database\Schema::DATABASE_VERSION ) {
 		$db = new Database\Schema();
 		$db->create_social_table();
 	}
-);
+}
+
+register_activation_hook( __FILE__, __NAMESPACE__ . '\update_database' );
