@@ -24,7 +24,7 @@ class Schema {
 	 *
 	 * @var int $db_version
 	 */
-	private $db_version = 2;
+	public const DATABASE_VERSION = 2;
 
 	/**
 	 * Create table for storing social account information.
@@ -51,6 +51,6 @@ class Schema {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		update_option( 'smolblog_social_db_version', $this->db_version );
+		update_option( 'smolblog_social_db_version', self::DATABASE_VERSION );
 	}
 }
