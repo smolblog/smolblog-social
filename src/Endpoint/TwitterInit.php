@@ -77,12 +77,24 @@ class TwitterInit extends ApiEndpoint {
 		}
 
 		$current_user = get_current_user_id();
+		$current_blog = get_current_blog_id();
+
+		// We want the callback to go to the root site.
+		switch_to_blog( get_main_site_id() );
+
 		$callback_url = get_rest_url( null, 'smolblog/v1/twitter/callback' ) . '?_wpnonce=' . wp_create_nonce( 'wp_rest' );
 		$connection   = new TwitterOAuth( SMOLBLOG_TWITTER_APPLICATION_KEY, SMOLBLOG_TWITTER_APPLICATION_SECRET );
 
 		$request_token = $connection->oauth( 'oauth/request_token', array( 'oauth_callback' => $callback_url ) );
 
-		set_transient( 'smolblog_twitter_oauth_request_' . $current_user, $request_token, 5 * MINUTE_IN_SECONDS );
+		set_transient(
+			'smolblog_twitter_oauth_request_' . $current_user,
+			array_merge(
+				$request_token,
+				[ 'redirect_to' => $current_blog ]
+			),
+			5 * MINUTE_IN_SECONDS
+		);
 
 		$url = $connection->url( 'oauth/authorize', array( 'oauth_token' => $request_token['oauth_token'] ) );
 

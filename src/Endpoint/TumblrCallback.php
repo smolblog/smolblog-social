@@ -8,6 +8,7 @@
 
 namespace Smolblog\Social\Endpoint;
 
+use Smolblog\Social\Model\SocialAccount;
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
 use Tumblr\API\Client as TumblrClient;
 use \WP_REST_Request;
@@ -72,8 +73,6 @@ class TumblrCallback extends ApiEndpoint {
 	 * @return void used as control structure only.
 	 */
 	public function run( WP_REST_Request $request = null ) {
-		global $wpdb;
-
 		if ( ! $request ) {
 			return;
 		}
@@ -118,19 +117,17 @@ class TumblrCallback extends ApiEndpoint {
 		);
 		$user   = $client->getUserInfo()->user;
 
-		$wpdb->insert(
-			$wpdb->prefix . 'smolblog_social',
-			[
-				'user_id'         => $current_user,
-				'social_type'     => 'tumblr',
-				'social_username' => $user->name,
-				'oauth_token'     => $access_info['oauth_token'],
-				'oauth_secret'    => $access_info['oauth_token_secret'],
-			],
-			[ '%d', '%s', '%s', '%s', '%s' ],
-		);
+		$account = new SocialAccount();
 
-		header( 'Location: /wp-admin/admin.php?page=smolblog', true, 302 );
+		$account->user_id         = $current_user;
+		$account->social_type     = 'tumblr';
+		$account->social_username = $user->name;
+		$account->oauth_token     = $access_info['oauth_token'];
+		$account->oauth_secret    = $access_info['oauth_token_secret'];
+
+		$account->save();
+
+		header( 'Location: ' . get_admin_url( $request_token['redirect_to'], 'admin.php?page=smolblog' ), true, 302 );
 		die;
 	}
 }

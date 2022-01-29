@@ -8,6 +8,7 @@
 
 namespace Smolblog\Social\Endpoint;
 
+use Smolblog\Social\Model\SocialAccount;
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
 use Abraham\TwitterOAuth\TwitterOAuth;
 use \WP_REST_Request;
@@ -72,15 +73,13 @@ class TwitterCallback extends ApiEndpoint {
 	 * @return void used as control structure only.
 	 */
 	public function run( WP_REST_Request $request = null ) {
-		global $wpdb;
-
 		if ( ! $request ) {
 			return;
 		}
 		$current_user  = get_current_user_id();
 		$request_token = get_transient( 'smolblog_twitter_oauth_request_' . $current_user );
 
-		if ( isset( $_REQUEST['oauth_token'] ) && $request_token['oauth_token'] !== $_REQUEST['oauth_token'] ) {
+		if ( isset( $request['oauth_token'] ) && $request_token['oauth_token'] !== $request['oauth_token'] ) {
 			wp_die( 'OAuth tokens did not match; <a href="' . esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ) . '">try again</a>' );
 		}
 
@@ -91,21 +90,19 @@ class TwitterCallback extends ApiEndpoint {
 			$request_token['oauth_token_secret']
 		);
 
-		$access_info = $connection->oauth( 'oauth/access_token', [ 'oauth_verifier' => $_REQUEST['oauth_verifier'] ] );
+		$access_info = $connection->oauth( 'oauth/access_token', [ 'oauth_verifier' => $request['oauth_verifier'] ] );
 
-		$wpdb->insert(
-			$wpdb->prefix . 'smolblog_social',
-			[
-				'user_id'         => $current_user,
-				'social_type'     => 'twitter',
-				'social_username' => $access_info['screen_name'],
-				'oauth_token'     => $access_info['oauth_token'],
-				'oauth_secret'    => $access_info['oauth_token_secret'],
-			],
-			[ '%d', '%s', '%s', '%s', '%s' ],
-		);
+		$account = new SocialAccount();
 
-		header( 'Location: /wp-admin/admin.php?page=smolblog', true, 302 );
+		$account->user_id         = $current_user;
+		$account->social_type     = 'twitter';
+		$account->social_username = $access_info['screen_name'];
+		$account->oauth_token     = $access_info['oauth_token'];
+		$account->oauth_secret    = $access_info['oauth_token_secret'];
+
+		$account->save();
+
+		header( 'Location: ' . get_admin_url( $request_token['redirect_to'], 'admin.php?page=smolblog' ), true, 302 );
 		die;
 	}
 }
