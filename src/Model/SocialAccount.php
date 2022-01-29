@@ -14,6 +14,34 @@ class SocialAccount {
 	public const TABLE_NAME = 'smolblog_social';
 
 	/**
+	 * Get all social accounts owned by the given user.
+	 *
+	 * @param integer $user_id User ID of the desired user's accounts.
+	 * @return array Database results.
+	 */
+	public static function get_accounts_for_user( $user_id = 0 ) {
+		global $wpdb;
+
+		if ( ! $user_id ) {
+			return;
+		}
+
+		switch_to_blog( get_main_site_id() );
+
+		$table_name = $wpdb->prefix . self::TABLE_NAME;
+		$results    = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM $table_name WHERE user_id = %d", //phpcs:ignore
+				$user_id,
+			)
+		);
+
+		restore_current_blog();
+
+		return $results;
+	}
+
+	/**
 	 * Database ID for this account
 	 *
 	 * @var int
