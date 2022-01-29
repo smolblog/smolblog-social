@@ -16,6 +16,8 @@
 
 namespace Smolblog\Social;
 
+use Smolblog\Social\Database\Schema;
+
 defined( 'ABSPATH' ) || die( 'Please do not.' );
 
 // Load composer libraries.
@@ -56,8 +58,8 @@ add_action(
  * Check the database version and update if needed.
  */
 function update_database() {
-	if ( get_option( 'smolblog_social_db_version', 0 ) < Database\Schema::DATABASE_VERSION ) {
-		$db = new Database\Schema();
+	if ( is_main_site() && get_option( 'smolblog_social_db_version', 0 ) < Schema::DATABASE_VERSION ) {
+		$db = new Schema();
 		$db->create_social_table();
 	}
 }
