@@ -1,46 +1,52 @@
 {
-	"name": "smolblog/smolblog-social",
-	"description": "Connect WordPress to Twitter",
-	"version": "0.1.0",
-	"type": "wordpress-plugin",
-	"authors": [
-		{
-			"name": "Evan Hildreth",
-			"email": "me@eph.me",
-			"homepage": "http://eph.me",
-			"role": "Developer"
-		}
-	],
-	"repositories":[
-		{
-			"type": "vcs",
-			"url": "https://github.com/webdevstudios/oops-wp"
-		}
-	],
-	"require": {
-		"webdevstudios/oops-wp": "dev-feature/rest-api-support",
-		"j7mbo/twitter-api-php": "^1.0",
-		"abraham/twitteroauth": "^1.0",
-		"league/commonmark": "^0.18.1",
-		"composer/installers": "~1.0",
-		"woocommerce/action-scheduler": "^3.1",
-		"tumblr/tumblr": "^0.4.0"
-	},
-	"require-dev": {
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
-		"phpcompatibility/phpcompatibility-wp": "^2.1.1",
-		"wp-coding-standards/wpcs": "~2.3.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"Smolblog\\Social\\": "src/"
-		}
-	},
-	"extra": {
-		"installer-paths": {
-				"vendor/plugins/{$name}": ["type:wordpress-plugin"],
-				"vendor/mu-plugins/{$name}": ["type:wordpress-muplugin"],
-				"vendro/themes/{$name}": ["type:wordpress-theme"]
-		}
-	}
+  "name": "smolblog/smolblog-social",
+  "description": "Connect WordPress to Twitter",
+  "version": "0.1.0",
+  "type": "wordpress-plugin",
+  "authors": [
+    {
+      "name": "Evan Hildreth",
+      "email": "me@eph.me",
+      "homepage": "http://eph.me",
+      "role": "Developer"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/oddevan/oops-wp"
+    }
+  ],
+  "require": {
+    "webdevstudios/oops-wp": "dev-feature/rest-api-support",
+    "j7mbo/twitter-api-php": "^1.0",
+    "abraham/twitteroauth": "^1.0",
+    "league/commonmark": "^0.18.1",
+    "composer/installers": "~1.0",
+    "woocommerce/action-scheduler": "^3.1",
+    "tumblr/tumblr": "^0.4.0"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
+    "phpcompatibility/phpcompatibility-wp": "^2.1.1",
+    "wp-coding-standards/wpcs": "~2.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Smolblog\\Social\\": "src/"
+    }
+  },
+  "extra": {
+    "installer-paths": {
+      "vendor/plugins/{$name}": [
+        "type:wordpress-plugin"
+      ],
+      "vendor/mu-plugins/{$name}": [
+        "type:wordpress-muplugin"
+      ],
+      "vendor/themes/{$name}": [
+        "type:wordpress-theme"
+      ]
+    }
+  }
 }
