@@ -12,6 +12,7 @@ namespace Smolblog\Social\AdminPage;
 use WebDevStudios\OopsWP\Utility\Hookable;
 use Smolblog\Social\Import\Twitter;
 use Smolblog\Social\Import\Tumblr;
+use Smolblog\Social\Model\SocialAccount;
 use Tumblr\API\Client as TumblrClient;
 
 /**
@@ -47,15 +48,7 @@ class SmolblogMain implements Hookable {
 	 * Output the Smolblog dashboard page
 	 */
 	public function smolblog_dashboard() {
-		global $wpdb;
-
-		$table_name   = $wpdb->prefix . 'smolblog_social';
-		$all_accounts = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE user_id = %d", //phpcs:ignore
-				get_current_user_id(),
-			)
-		);
+		$all_accounts = SocialAccount::get_accounts_for_user( get_current_user_id() );
 		?>
 		<h1>Smolblog</h1>
 

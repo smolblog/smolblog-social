@@ -10,6 +10,7 @@
 namespace Smolblog\Social\Import;
 
 use Smolblog\Social\Job\JobQueue;
+use Smolblog\Social\Model\SocialAccount;
 use Tumblr\API\Client as TumblrClient;
 
 /**
@@ -25,15 +26,7 @@ class Tumblr {
 	 * @return void
 	 */
 	public function import_tumblr( $account_id, $blog_name, $before = null ) {
-		global $wpdb;
-
-		$table_name   = $wpdb->prefix . 'smolblog_social';
-		$account_info = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE id = %d", //phpcs:ignore
-				$account_id
-			)
-		);
+		$account = new SocialAccount( $account_id );
 
 		echo "Loading Tumblr...\n";
 
