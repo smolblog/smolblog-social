@@ -58,7 +58,7 @@ add_action(
  * Check the database version and update if needed.
  */
 function update_database() {
-	if ( is_main_site() && get_option( 'smolblog_social_db_version', 0 ) < Schema::DATABASE_VERSION ) {
+	if ( is_main_site() && get_option( 'smolblog_social_db_version', 0 ) !== Schema::DATABASE_VERSION ) {
 		$db = new Schema();
 		$db->create_social_table();
 	}
