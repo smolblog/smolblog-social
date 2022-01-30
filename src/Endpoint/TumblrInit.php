@@ -82,7 +82,7 @@ class TumblrInit extends ApiEndpoint {
 		// We want the callback to go to the root site.
 		switch_to_blog( get_main_site_id() );
 
-		$callback_url = get_rest_url( null, 'smolblog/v1/tumblr/callback' ) . '?_wpnonce=' . wp_create_nonce( 'wp_rest' );
+		$callback_url = get_rest_url( null, 'smolblog/v1/tumblr/callback' );
 
 		$client          = new TumblrClient( SMOLBLOG_TUMBLR_APPLICATION_KEY, SMOLBLOG_TUMBLR_APPLICATION_SECRET );
 		$request_handler = $client->getRequestHandler();
@@ -94,12 +94,16 @@ class TumblrInit extends ApiEndpoint {
 		$data = array();
 		parse_str( $out, $data );
 
+		$oauth_token = $data['oauth_token'] ?? '';
+
 		set_transient(
-			'smolblog_tumblr_oauth_request_' . $current_user,
-			array_merge(
-				$data,
-				[ 'redirect_to' => $current_blog ]
-			),
+			'smolblog_tumblr_' . $oauth_token,
+			[
+				'redirect_to'  => $current_blog,
+				'user'         => $current_user,
+				'oauth_token'  => $oauth_token,
+				'oauth_secret' => $ata['oauth_token_secret'],
+			],
 			5 * MINUTE_IN_SECONDS
 		);
 
