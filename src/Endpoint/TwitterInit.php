@@ -88,11 +88,13 @@ class TwitterInit extends ApiEndpoint {
 		$request_token = $connection->oauth( 'oauth/request_token', array( 'oauth_callback' => $callback_url ) );
 
 		set_transient(
-			'smolblog_twitter_oauth_request_' . $current_user,
-			array_merge(
-				$request_token,
-				[ 'redirect_to' => $current_blog ]
-			),
+			'smolblog_twitter_' . $request_token['oauth_token'],
+			[
+				'user'               => $current_user,
+				'redirect_to'        => $current_blog,
+				'oauth_token'        => $request_token['oauth_token'],
+				'oauth_token_secret' => $request_token['oauth_token_secret'],
+			],
 			5 * MINUTE_IN_SECONDS
 		);
 
