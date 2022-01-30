@@ -99,10 +99,10 @@ class TumblrInit extends ApiEndpoint {
 		set_transient(
 			'smolblog_tumblr_' . $oauth_token,
 			[
-				'redirect_to'  => $current_blog,
-				'user'         => $current_user,
-				'oauth_token'  => $oauth_token,
-				'oauth_secret' => $data['oauth_token_secret'],
+				'redirect_to'        => $current_blog,
+				'user'               => $current_user,
+				'oauth_token'        => $oauth_token,
+				'oauth_token_secret' => $data['oauth_token_secret'],
 			],
 			5 * MINUTE_IN_SECONDS
 		);
