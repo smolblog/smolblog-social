@@ -102,7 +102,7 @@ class TumblrInit extends ApiEndpoint {
 				'redirect_to'  => $current_blog,
 				'user'         => $current_user,
 				'oauth_token'  => $oauth_token,
-				'oauth_secret' => $ata['oauth_token_secret'],
+				'oauth_secret' => $data['oauth_token_secret'],
 			],
 			5 * MINUTE_IN_SECONDS
 		);
