@@ -28,6 +28,7 @@ class AdminPageRegistrar extends Service {
 	 */
 	protected $pages = [
 		SmolblogMain::class,
+		ManageConnections::class,
 	];
 
 	/**

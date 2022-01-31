@@ -65,3 +65,27 @@ function update_database() {
 }
 
 register_activation_hook( __FILE__, __NAMESPACE__ . '\update_database' );
+
+add_action(
+	'admin_enqueue_scripts',
+	function() {
+		// Register our script for enqueuing.
+		$smolblog_asset_info =
+		file_exists( plugin_dir_path( __FILE__ ) . 'build/index.asset.php' ) ?
+		require plugin_dir_path( __FILE__ ) . 'build/index.asset.php' :
+		[
+			'dependencies' => 'wp-element',
+			'version'      => filemtime( 'src/index.js' ),
+		];
+
+		wp_register_script(
+			'smolblog_admin',
+			plugin_dir_url( __FILE__ ) . 'build/index.js',
+			$smolblog_asset_info['dependencies'],
+			$smolblog_asset_info['version'],
+			true
+		);
+	},
+	1,
+	0
+);
