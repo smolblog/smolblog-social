@@ -71,16 +71,16 @@ add_action(
 	function() {
 		// Register our script for enqueuing.
 		$smolblog_asset_info =
-		file_exists( plugin_dir_path( __FILE__ ) . 'build/index.asset.php' ) ?
-		require plugin_dir_path( __FILE__ ) . 'build/index.asset.php' :
+		file_exists( plugin_dir_path( __FILE__ ) . 'build/main.asset.php' ) ?
+		require plugin_dir_path( __FILE__ ) . 'build/main.asset.php' :
 		[
 			'dependencies' => 'wp-element',
-			'version'      => filemtime( 'src/index.js' ),
+			'version'      => filemtime( 'js/main.js' ),
 		];
 
 		wp_register_script(
 			'smolblog_admin',
-			plugin_dir_url( __FILE__ ) . 'build/index.js',
+			plugin_dir_url( __FILE__ ) . 'build/main.js',
 			$smolblog_asset_info['dependencies'],
 			$smolblog_asset_info['version'],
 			true
