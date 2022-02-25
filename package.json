@@ -1,0 +1,34 @@
+{
+  "name": "smolblog-social",
+  "version": "1.0.0",
+  "description": "A system to connect WordPress to your social networks.",
+  "scripts": {
+    "build": "wp-scripts build",
+    "check-engines": "wp-scripts check-engines",
+    "check-licenses": "wp-scripts check-licenses",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "start": "wp-scripts start",
+    "test:e2e": "wp-scripts test-e2e",
+    "test:unit": "wp-scripts test-unit-js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smolblog/smolblog-social.git"
+  },
+  "author": "Evan Hildreth <me@eph.me>",
+  "license": "GPL 2",
+  "keywords": [
+    "twitter",
+    "tumblr",
+    "social-media"
+  ],
+  "bugs": {
+    "url": "https://github.com/smolblog/smolblog-social/issues"
+  },
+  "homepage": "https://github.com/smolblog/smolblog-social#readme",
+  "devDependencies": {
+    "@wordpress/scripts": "^22.0.1"
+  }
+}
