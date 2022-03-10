@@ -46,7 +46,7 @@ class AccountsBlogs extends ApiEndpoint {
 	protected function get_args() : array {
 		return [
 			'methods'             => [ 'GET' ],
-			'permission_callback' => '__return_true', // [ $this, 'is_admin_on_blog' ],
+			'permission_callback' => [ $this, 'is_admin_on_blog' ],
 		];
 	}
 

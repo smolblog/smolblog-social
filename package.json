@@ -30,5 +30,8 @@
   "homepage": "https://github.com/smolblog/smolblog-social#readme",
   "devDependencies": {
     "@wordpress/scripts": "^22.0.1"
+  },
+  "dependencies": {
+    "@wordpress/api-fetch": "^6.0.1"
   }
 }
