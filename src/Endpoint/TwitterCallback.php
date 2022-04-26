@@ -48,6 +48,7 @@ class TwitterCallback extends ApiEndpoint {
 		// this needs to work outside of authenticated requests.
 		return [
 			'methods' => [ 'POST', 'GET' ],
+			'permission_callback' => '__return_true',
 		];
 	}
 
