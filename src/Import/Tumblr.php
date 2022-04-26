@@ -33,8 +33,8 @@ class Tumblr {
 		$client = new TumblrClient(
 			SMOLBLOG_TUMBLR_APPLICATION_KEY,
 			SMOLBLOG_TUMBLR_APPLICATION_SECRET,
-			$account_info[0]->oauth_token,
-			$account_info[0]->oauth_secret
+			$account->oauth_token,
+			$account->oauth_secret
 		);
 
 		$response = $client->getBlogPosts(
@@ -165,6 +165,27 @@ class Tumblr {
 	}
 
 	/**
+	 * Indent level for parsing text blocks.
+	 *
+	 * @var integer
+	 */
+	private $indent_level = 0;
+
+	/**
+	 * Open indent tags for parsing text blocks.
+	 *
+	 * @var array of strings
+	 */
+	private $open_indent_tags = [];
+
+	/**
+	 * Currently open indent block
+	 *
+	 * @var string
+	 */
+	private $current_indent_block = '';
+
+	/**
 	 * Translate Tumblr NPF blocks into WordPress blocks
 	 *
 	 * @param Array $blocks Array of blocks from the Tumblr API.
@@ -175,7 +196,13 @@ class Tumblr {
 		$parsed = '';
 		$media  = [];
 
+		// Reset parsing vars.
+		$this->indent_level = 0;
+		$this->open_indent_tags = [];
+
 		foreach ( $blocks as $block_index => $block ) {
+			$this->close_indented_block( $block );
+
 			switch ( strtolower( $block->type ) ) {
 				case 'text':
 					if ( ! $title && isset( $block->subtype ) && 'heading1' === strtolower( $block->subtype ) ) {
@@ -216,6 +243,10 @@ class Tumblr {
 			}
 		}
 
+		while ( $popped = array_pop( $this->open_indent_tags ) ) {
+			$parsed .= $popped;
+		}
+
 		return [
 			'title'   => $title,
 			'content' => $parsed,
@@ -244,16 +275,91 @@ class Tumblr {
 				return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
 			case 'quote':
 				return "<!-- wp:pullquote -->\n<figure class=\"wp-block-pullquote\"><blockquote><p>$block_text</p></blockquote></figure>\n<!-- /wp:pullquote -->";
-			case 'indented':
-				return "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>$block_text</p></blockquote>\n<!-- /wp:quote -->";
-			case 'ordered-list-item':
-				return "<!-- wp:list {\"ordered\":true} -->\n<ol>\n<li>$block_text</li>\n</ol>\n<!-- /wp:list -->\n\n";
-			case 'unordered-list-item':
-				return "<!-- wp:list -->\n<ul>\n<li>$block_text</li>\n</ul>\n<!-- /wp:list -->\n\n";
 			case 'chat':
 				return "<!-- wp:code -->\n<pre class=\"wp-block-code\"><code>$block_text</code></pre>\n<!-- /wp:code -->";
+			case 'indented':
+			case 'ordered-list-item':
+			case 'unordered-list-item':
+				return $this->open_indented_block( $block, $block_text );
 		}
 		return "<!-- wp:paragraph -->\n<p>$block_text</p>\n<!-- /wp:paragraph -->";
+	}
+
+	/**
+	 * Special processing for indentable blocks
+	 *
+	 * @param object $block Block object from the Tumblr API.
+	 * @param string $block_text Formatted text for this block.
+	 * @return string Text for this block.
+	 */
+	private function open_indented_block( $block, $block_text ) : string {
+		$output = '';
+		$this_block = strtolower( $block->subtype );
+		$this_indent = $block->indent_level ?? 0;
+		if ( empty( $this->open_indent_tags ) ) {
+			switch ( $this_block ) {
+				case 'indented':
+					$output = "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\">\n";
+					array_push($this->open_indent_tags, "</blockquote>\n<!-- /wp:quote -->");
+					break;
+				case 'ordered-list-item':
+					$output = "<!-- wp:list {\"ordered\":true} -->\n<ol>\n";
+					array_push($this->open_indent_tags, "</ol>\n<!-- /wp:list -->");
+					break;
+				case 'unordered-list-item':
+					$output = "<!-- wp:list -->\n<ul>\n";
+					array_push($this->open_indent_tags, "</ul>\n<!-- /wp:list -->");
+					break;
+			}
+			$this->current_indent_block = $this_block;
+		}
+
+		if ( $this_indent > $this->indent_level ) {
+			switch ( $this_block ) {
+				case 'indented':
+					$output .= "<blockquote class=\"wp-block-quote\">\n";
+					array_push($this->open_indent_tags, "</blockquote>\n");
+					break;
+				case 'ordered-list-item':
+					$output .= "<ol>\n";
+					array_push($this->open_indent_tags, "</ol>\n");
+					break;
+				case 'unordered-list-item':
+					$output .= "<ul>\n";
+					array_push($this->open_indent_tags, "</ul>\n");
+					break;
+			}
+			$this->indent_level = $this_indent;
+		}
+
+		switch ( $this_block ) {
+			case 'indented':
+				$output .= "<p>$block_text</p>\n";
+				break;
+			case 'ordered-list-item':
+			case 'unordered-list-item':
+				$output .= "<li>$block_text</li>\n";
+				break;
+		}
+
+		return $output;
+	}
+
+	private function close_indented_block( $block ) : string {
+		$output = '';
+		$this_block = strtolower( $block->subtype ?? '' );
+		$this_indent = $block->indent_level ?? 0;
+
+		if ( $this_indent < $this->indent_level ) {
+			$this->indent_level -= 1;
+			$output .= array_pop( $this->open_indent_tags ) . $this->close_indented_block( $block );
+		}
+
+		if ( $this_indent === 0 && $this_block !== $this->current_indent_block ) {
+			$output .= array_pop( $this->open_indent_tags );
+		}
+
+		return $output;
 	}
 
 	/**
