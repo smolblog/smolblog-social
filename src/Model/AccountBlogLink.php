@@ -10,15 +10,21 @@ namespace Smolblog\Social\Model;
 /**
  * Model class to handle getting account data from the DB.
  */
-class AccountBlogLink {
-	public const TABLE_NAME = 'smolblog_social_blog_link';
+class AccountBlogLink extends BaseModel {
+	public const TABLENAME = 'smolblog_social_blog_link';
 
 	/**
-	 * Database ID for this account
+	 * Get the table name with the current WP prefix
 	 *
-	 * @var int
+	 * @return string
 	 */
-	private $db_id;
+	protected function full_table_name() : string {
+		global $wpdb;
+		switch_to_blog( get_main_site_id() );
+		$full_table_name = $wpdb->prefix . self::TABLENAME;
+		restore_current_blog();
+		return $full_table_name;
+	}
 
 	/**
 	 * Create a SocialAccount object. Pass an ID to retrieve one from the database.
@@ -26,43 +32,39 @@ class AccountBlogLink {
 	 * @param integer $id Database ID for the account.
 	 */
 	public function __construct( $id = 0 ) {
-		global $wpdb;
-		$this->db_id = $id;
+		$this->data = [
+			'blog_id' => 0,
+			'social_id' => 0,
+			'additional_info' => '',
+			'can_push' => false,
+			'can_pull' => false,
+			'pull_frequency' => 0,
+		];
 
-		if ( ! $id ) {
-			return;
+		$this->data_formats = [
+			'%d',
+			'%d',
+			'%s',
+			'%d',
+			'%d',
+			'%d',
+		];
+
+		if ( $id ) {
+			global $wpdb;
+			$tablename = $this->full_table_name();
+
+			$db_result = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT `id` FROM $tablename WHERE `id` = %d", //phpcs:ignore
+					$id
+				)
+			);
+
+			if ( $db_result ) {
+				$this->db_id = $db_result;
+				$this->load();
+			}
 		}
-
-		switch_to_blog( get_main_site_id() );
-
-		// do db stuff.
-
-		restore_current_blog();
-	}
-
-	/**
-	 * Save this account's state to the database.
-	 */
-	public function save() {
-		if ( $this->db_id ) {
-			$this->update();
-			return;
-		}
-
-		$this->insert();
-	}
-
-	/**
-	 * Perform a database insert.
-	 */
-	private function insert() {
-
-	}
-
-	/**
-	 * Perform a database update.
-	 */
-	private function update() {
-
 	}
 }
