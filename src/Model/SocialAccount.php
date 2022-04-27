@@ -21,7 +21,7 @@ class SocialAccount extends BaseModel {
 	protected function full_table_name() : string {
 		global $wpdb;
 		switch_to_blog( get_main_site_id() );
-		$full_table_name = $wpdb->prefix . self::TABLENAME;
+		$full_table_name = $wpdb->prefix . self::TABLE_NAME;
 		restore_current_blog();
 		return $full_table_name;
 	}

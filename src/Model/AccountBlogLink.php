@@ -11,7 +11,7 @@ namespace Smolblog\Social\Model;
  * Model class to handle getting account data from the DB.
  */
 class AccountBlogLink extends BaseModel {
-	public const TABLENAME = 'smolblog_social_blog_link';
+	public const TABLE_NAME = 'smolblog_social_blog_link';
 
 	/**
 	 * Get the table name with the current WP prefix
@@ -21,7 +21,7 @@ class AccountBlogLink extends BaseModel {
 	protected function full_table_name() : string {
 		global $wpdb;
 		switch_to_blog( get_main_site_id() );
-		$full_table_name = $wpdb->prefix . self::TABLENAME;
+		$full_table_name = $wpdb->prefix . self::TABLE_NAME;
 		restore_current_blog();
 		return $full_table_name;
 	}
