@@ -52,7 +52,7 @@ abstract class BaseModel {
 	 *
 	 * @var boolean
 	 */
-	protected bool $has_audit_fields = true;
+	protected bool $has_audit_fields = false;
 
 	/**
 	 * Returns true if this instance is out-of-sync with the database
