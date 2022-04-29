@@ -31,10 +31,10 @@ class AccountBlogLink extends BaseModel {
 	 *
 	 * @param integer $id Database ID for the account.
 	 */
-	public function __construct( $id = 0 ) {
+	public function __construct( $blog_id = 0, $social_id = 0 ) {
 		$this->data = [
-			'blog_id' => 0,
-			'social_id' => 0,
+			'blog_id' => $blog_id,
+			'social_id' => $social_id,
 			'additional_info' => '',
 			'can_push' => false,
 			'can_pull' => false,
@@ -56,8 +56,9 @@ class AccountBlogLink extends BaseModel {
 
 			$db_result = $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT `id` FROM $tablename WHERE `id` = %d", //phpcs:ignore
-					$id
+					"SELECT `id` FROM $tablename WHERE `blog_id` = %d AND `social_id` = %d", //phpcs:ignore
+					$blog_id,
+					$social_id
 				)
 			);
 
