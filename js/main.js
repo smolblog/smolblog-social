@@ -1,29 +1,44 @@
 import { AccountBlogLink } from "./components/AccountBlogLink";
 import apiFetch from "@wordpress/api-fetch";
 
-const { render, useState } = wp.element;
+const { render, useState, useEffect } = wp.element;
 
 const ManageConnections = () => {
   const [accounts, setAccounts] = useState([]);
+  const [currentUserId, setUserId] = useState(0);
 
-  apiFetch({ path: "/smolblog/v1/accounts/blogs" }).then(setAccounts);
+  useEffect(() => {
+    apiFetch({ path: "/smolblog/v1/accounts/blogs" }).then(setAccounts);
+    apiFetch({ path: "/wp/v2/users/me" }).then((response) =>
+      setUserId(response.id)
+    );
+  }, []);
 
   return (
-    <table className="widefat striped fixed">
-      <thead>
-        <tr>
-          <th>Account</th>
-          <th>Push</th>
-          <th>Pull</th>
-        </tr>
-      </thead>
+    <div>
+      <table className="widefat striped fixed">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Push</th>
+            <th>Pull</th>
+            <th></th>
+          </tr>
+        </thead>
 
-      <tbody>
-        {accounts.map((account) => (
-          <AccountBlogLink account={account} />
-        ))}
-      </tbody>
-    </table>
+        <tbody>
+          {accounts.map((account) => (
+            <AccountBlogLink account={account} currentUserId={currentUserId} />
+          ))}
+        </tbody>
+      </table>
+      <p style={{ textAlign: "center" }}>
+        Icons from{" "}
+        <a href="https://github.com/FortAwesome/Font-Awesome/tree/6.x/svgs/brands">
+          FontAwesome
+        </a>
+      </p>
+    </div>
   );
 };
 
