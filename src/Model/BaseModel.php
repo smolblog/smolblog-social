@@ -78,7 +78,7 @@ abstract class BaseModel {
 	 * @param string $name Property to get.
 	 * @return mixed|null Value of $data[$name] or null
 	 */
-	public function __get( string $name ) : mixed {
+	public function __get( string $name ) {
 		if ( ! isset( $this->data[ $name ] ) ) {
 			$trace = debug_backtrace();
 			trigger_error(
@@ -100,7 +100,7 @@ abstract class BaseModel {
 	 * @param string $name Property to set.
 	 * @param mixed  $value Value to set.
 	 */
-	public function __set( string $name, mixed $value ) : void {
+	public function __set( string $name, $value ) : void {
 		if ( ! isset( $this->data[ $name ] ) ) {
 			$trace = debug_backtrace();
 			trigger_error(

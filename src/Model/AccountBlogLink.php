@@ -50,7 +50,7 @@ class AccountBlogLink extends BaseModel {
 			'%d',
 		];
 
-		if ( $id ) {
+		if ( $blog_id && $social_id ) {
 			global $wpdb;
 			$tablename = $this->full_table_name();
 

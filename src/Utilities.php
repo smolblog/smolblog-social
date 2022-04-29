@@ -63,6 +63,10 @@ class Utilities {
 
 		restore_current_blog();
 
-		return $results;
+		return array_map(function($line) {
+			$line['can_push'] = $line['can_push'] ? true : false;
+			$line['can_pull'] = $line['can_pull'] ? true : false;
+			return $line;
+		}, $results);
 	}
 }

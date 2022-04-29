@@ -1,10 +1,13 @@
 import Twitter from "./icons/Twitter";
 import Tumblr from "./icons/Tumblr";
+import apiFetch from "@wordpress/api-fetch";
 
-const { useState } = wp.element;
+const { useEffect, useState } = wp.element;
 
 export const AccountBlogLink = (props) => {
   const [isBusy, setIsBusy] = useState(false);
+  const [canPush, setCanPush] = useState(false);
+  const [canPull, setCanPull] = useState(false);
 
   const {
     account: {
@@ -19,6 +22,11 @@ export const AccountBlogLink = (props) => {
     currentUserId,
   } = props;
 
+  useEffect(() => {
+    setCanPush(push);
+    setCanPull(pull);
+  }, [push, pull]);
+
   const getIcon = () => {
     switch (type) {
       case "twitter":
@@ -29,19 +37,28 @@ export const AccountBlogLink = (props) => {
     return <span />;
   };
 
-  const getCheckbox = (name, check) => {
-    return (
-      <input
-        type="checkbox"
-        name={name}
-        id={`checkbox-${id}-${name}`}
-        checked={check}
-        disabled={disabled()}
-      />
-    );
+  const disabled = () => isBusy || currentUserId != ownerId;
+
+  const onClick = () => {
+    setIsBusy(true);
+    setPermissions().then(() => setIsBusy(false));
   };
 
-  const disabled = () => isBusy || currentUserId != ownerId;
+  const setPermissions = async () => {
+    const result = await apiFetch({
+      path: "/smolblog/v1/accounts/blogs/setpermissions",
+      method: "POST",
+      data: {
+        social_id: id,
+        push: canPush,
+        pull: canPull,
+      },
+    });
+
+    if (!result.success) {
+      throw Error(`Error from Smolblog: ${JSON.stringify(result)}`);
+    }
+  };
 
   return (
     <tr>
@@ -49,19 +66,31 @@ export const AccountBlogLink = (props) => {
         {getIcon()} {name}
         <span className="additional-info">{info}</span>
       </td>
-      <td>{getCheckbox("push", push)}</td>
-      <td>{getCheckbox("pull", pull)}</td>
       <td>
-        <button disabled={disabled()}>Save</button>
+        <input
+          type="checkbox"
+          name={`checkbox-${id}-push`}
+          id={`checkbox-${id}-push`}
+          checked={canPush}
+          disabled={disabled()}
+          onChange={() => setCanPush(!canPush)}
+        />
+      </td>
+      <td>
+        <input
+          type="checkbox"
+          name={`checkbox-${id}-pull`}
+          id={`checkbox-${id}-pull`}
+          checked={canPull}
+          disabled={disabled()}
+          onChange={() => setCanPull(!canPull)}
+        />
+      </td>
+      <td>
+        <button disabled={disabled()} onClick={onClick}>
+          Save
+        </button>
       </td>
     </tr>
-  );
-};
-
-const yesOrNo = (check) => {
-  return check && check > 0 ? (
-    <span style={{ color: "green", "font-weight": "bold" }}>Yes</span>
-  ) : (
-    <span style={{ color: "red", "font-weight": "bold" }}>No</span>
   );
 };

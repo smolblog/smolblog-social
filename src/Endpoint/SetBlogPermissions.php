@@ -13,6 +13,7 @@ use Smolblog\Social\Model\AccountBlogLink;
 use Smolblog\Social\Model\SocialAccount;
 use \WP_REST_Request;
 use \WP_REST_Response;
+use \WP_Error;
 
 /**
  * Class to register our custom post types
@@ -82,10 +83,10 @@ class SetBlogPermissions extends ApiEndpoint {
 		$current_blog = get_current_blog_id();
 		$account = new SocialAccount($request['social_id']);
 
-		if ( $account->needs_save() || $account->user_id !== $current_user ) {
+		if ( $account->needs_save() || $account->user_id != $current_user ) {
 			return new WP_Error(
 				'not_found',
-				'The indicated social account was not found.',
+				'The indicated social account was not found. ' . print_r([$account, $current_blog, $current_user], true),
 				[ 'status' => 404 ]
 			);
 		}
@@ -98,7 +99,7 @@ class SetBlogPermissions extends ApiEndpoint {
 			$link->additional_info = $request['additional_info'];
 		}
 
-		$link->save;
+		$link->save();
 
 		return new WP_REST_Response( [ 'success' => true ] );
 	}

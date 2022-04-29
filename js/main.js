@@ -7,11 +7,14 @@ const ManageConnections = () => {
   const [accounts, setAccounts] = useState([]);
   const [currentUserId, setUserId] = useState(0);
 
-  useEffect(() => {
-    apiFetch({ path: "/smolblog/v1/accounts/blogs" }).then(setAccounts);
-    apiFetch({ path: "/wp/v2/users/me" }).then((response) =>
-      setUserId(response.id)
-    );
+  useEffect(async () => {
+    const accountResponse = await apiFetch({
+      path: "/smolblog/v1/accounts/blogs",
+    });
+    const userResponse = await apiFetch({ path: "/wp/v2/users/me" });
+
+    setUserId(userResponse.id);
+    setAccounts(accountResponse);
   }, []);
 
   return (
@@ -28,7 +31,11 @@ const ManageConnections = () => {
 
         <tbody>
           {accounts.map((account) => (
-            <AccountBlogLink account={account} currentUserId={currentUserId} />
+            <AccountBlogLink
+              key={`account-${account.id}`}
+              account={account}
+              currentUserId={currentUserId}
+            />
           ))}
         </tbody>
       </table>
