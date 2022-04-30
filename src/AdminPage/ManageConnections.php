@@ -60,6 +60,12 @@ class ManageConnections implements Hookable {
 		?>
 		<h1>Social Connections</h1>
 		<div id="smolblog-social-connections-app"></div>
+
+		<h2>Add account</h2>
+		<p>
+			<a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/twitter/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Twitter</a>
+			<a href="<?php echo esc_attr( get_rest_url( null, 'smolblog/v1/tumblr/init' ) ); ?>?_wpnonce=<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>" class="button">Sign in with Tumblr</a>
+		</p>
 		<?php
 	}
 }
