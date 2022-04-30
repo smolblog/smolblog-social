@@ -61,10 +61,10 @@ export const AccountBlogLink = (props) => {
   };
 
   return (
-    <tr>
-      <td className={type}>
-        {getIcon()} {name}
-        <span className="additional-info">{info}</span>
+    <tr className={type}>
+      <td>{getIcon()}</td>
+      <td>
+        {name} <span className="additional-info">{info}</span>
       </td>
       <td>
         <input

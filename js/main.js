@@ -20,9 +20,16 @@ const ManageConnections = () => {
   return (
     <div>
       <table className="widefat striped fixed">
+        <colgroup>
+          <col span="1" style={{ width: "50px" }} />
+          <col span="1" />
+          <col span="1" style={{ width: "100px" }} />
+          <col span="1" style={{ width: "100px" }} />
+          <col span="1" style={{ width: "100px" }} />
+        </colgroup>
         <thead>
           <tr>
-            <th>Account</th>
+            <th colSpan="2">Account</th>
             <th>Push</th>
             <th>Pull</th>
             <th></th>
