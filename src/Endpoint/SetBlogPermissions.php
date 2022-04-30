@@ -91,13 +91,9 @@ class SetBlogPermissions extends ApiEndpoint {
 			);
 		}
 
-		$link = new AccountBlogLink($current_blog, $request['social_id']);
+		$link = new AccountBlogLink($current_blog, $request['social_id'], $request['additional_info'] ?? null);
 		$link->can_push = $request['push'];
 		$link->can_pull = $request['pull'];
-
-		if ( $request['additional_info'] && ! $link->additional_info ) {
-			$link->additional_info = $request['additional_info'];
-		}
 
 		$link->save();
 
