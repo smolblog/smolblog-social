@@ -24,6 +24,27 @@ class JobQueue {
 	}
 
 	/**
+	 * Schedule a job to run regularly.
+	 *
+	 * @param integer $timestamp UNIX timestamp of the first run.
+	 * @param integer $interval Time in seconds between jobs.
+	 * @param string  $name Name of job.
+	 * @param array   $args Arguments to pass to $callback. Default [].
+	 * @param boolean $reschedule If the job exists, pass true to reschedule. Default false.
+	 */
+	public function schedule_recurring_job( int $timestamp, int $interval, string $name, array $args = [], bool $reschedule = false ) {
+		if ( true === as_has_scheduled_action( $name ) ) {
+			if ( ! $reschedule ) {
+				return;
+			}
+
+			as_unschedule_all_actions( $name, $args, 'smolblog' );
+		}
+
+		as_schedule_recurring_action( $timestamp, $interval, $name, $args, 'smolblog' );
+	}
+
+	/**
 	 * Register a job to be scheduled later
 	 *
 	 * @param string   $name Name of job.

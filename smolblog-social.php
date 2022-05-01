@@ -17,6 +17,7 @@
 namespace Smolblog\Social;
 
 use Smolblog\Social\Database\Schema;
+use Smolblog\Social\Job\JobQueue;
 
 defined( 'ABSPATH' ) || die( 'Please do not.' );
 
@@ -38,6 +39,7 @@ add_action(
 		try {
 			update_database();
 			( new SmolblogSocial( __FILE__ ) )->run();
+			check_cron();
 		} catch ( Error $e ) {
 			add_action(
 				'admin_notices',
@@ -89,3 +91,15 @@ add_action(
 	1,
 	0
 );
+
+function check_cron() {
+	if ( ! is_main_site() ) {
+		return;
+	}
+
+	( new JobQueue() )->schedule_recurring_job(
+		strtotime( 'tomorrow' ),
+		DAY_IN_SECONDS,
+		'smolblog_import_refresh'
+	);
+}
