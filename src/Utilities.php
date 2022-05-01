@@ -42,6 +42,7 @@ class Utilities {
 					account.user_id,
 					account.social_type,
 					account.social_username,
+					link.id AS `link_id`,
 					link.additional_info,
 					link.can_push,
 					link.can_pull

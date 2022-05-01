@@ -2,12 +2,17 @@ import Twitter from "./icons/Twitter";
 import Tumblr from "./icons/Tumblr";
 import apiFetch from "@wordpress/api-fetch";
 
-const { useEffect, useState } = wp.element;
+const { useEffect, useState, Fragment } = wp.element;
+
+const SUB_ACCOUNT_REQUIRED = ["tumblr"];
 
 export const AccountBlogLink = (props) => {
   const [isBusy, setIsBusy] = useState(false);
   const [canPush, setCanPush] = useState(false);
   const [canPull, setCanPull] = useState(false);
+  const [allSubAccounts, setAllSubAccounts] = useState([]);
+  const [subAccount, setSubAccount] = useState("");
+  const [isParticular, setIsParticular] = useState(false);
 
   const {
     account: {
@@ -15,17 +20,34 @@ export const AccountBlogLink = (props) => {
       user_id: ownerId,
       social_type: type = "",
       social_username: name = "",
+      link_id: linkId = 0,
       additional_info: info = "",
       can_push: push = false,
       can_pull: pull = false,
     },
     currentUserId,
+    addRow,
   } = props;
 
   useEffect(() => {
     setCanPush(push);
     setCanPull(pull);
-  }, [push, pull]);
+    setSubAccount(info);
+    setIsParticular(linkId > 0);
+
+    if (SUB_ACCOUNT_REQUIRED.includes(type)) {
+      apiFetch({
+        path: `/smolblog/v1/accounts/${id}/subaccounts`,
+      })
+        .then((res) => {
+          setAllSubAccounts(res);
+          if (!info) {
+            setSubAccount(res[0].url);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  }, []);
 
   const getIcon = () => {
     switch (type) {
@@ -41,7 +63,10 @@ export const AccountBlogLink = (props) => {
 
   const onClick = () => {
     setIsBusy(true);
-    setPermissions().then(() => setIsBusy(false));
+    setPermissions().then(() => {
+      setIsBusy(false);
+      setIsParticular(true);
+    });
   };
 
   const setPermissions = async () => {
@@ -50,6 +75,7 @@ export const AccountBlogLink = (props) => {
       method: "POST",
       data: {
         social_id: id,
+        additional_info: subAccount,
         push: canPush,
         pull: canPull,
       },
@@ -60,11 +86,55 @@ export const AccountBlogLink = (props) => {
     }
   };
 
+  const dumpState = () => {
+    console.log({
+      id,
+      name,
+      info,
+      allSubAccounts,
+      subAccount,
+      isParticular,
+    });
+  };
+
   return (
     <tr className={type}>
-      <td>{getIcon()}</td>
+      <td onClick={dumpState}>{getIcon()}</td>
+      <td>{name}</td>
       <td>
-        {name} <span className="additional-info">{info}</span>
+        {allSubAccounts.length <= 0 ? (
+          <Fragment />
+        ) : isParticular ? (
+          <span>
+            {allSubAccounts.find((sub) => sub.url == subAccount)?.name ?? ""}
+          </span>
+        ) : (
+          <select onChange={(e) => setSubAccount(e.target.value)}>
+            {allSubAccounts.map((sub) => (
+              <option key={sub.name} value={sub.url}>
+                {sub.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </td>
+      <td>
+        {SUB_ACCOUNT_REQUIRED.includes(type) && !disabled() && isParticular ? (
+          <button
+            onClick={() =>
+              addRow({
+                id,
+                user_id: ownerId,
+                social_type: type,
+                social_username: name,
+              })
+            }
+          >
+            +
+          </button>
+        ) : (
+          ""
+        )}
       </td>
       <td>
         <input

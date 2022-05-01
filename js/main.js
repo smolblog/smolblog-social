@@ -23,6 +23,8 @@ const ManageConnections = () => {
         <colgroup>
           <col span="1" style={{ width: "50px" }} />
           <col span="1" />
+          <col span="1" />
+          <col span="1" style={{ width: "50px" }} />
           <col span="1" style={{ width: "100px" }} />
           <col span="1" style={{ width: "100px" }} />
           <col span="1" style={{ width: "100px" }} />
@@ -30,6 +32,7 @@ const ManageConnections = () => {
         <thead>
           <tr>
             <th colSpan="2">Account</th>
+            <th colSpan="2">Blog</th>
             <th>Push</th>
             <th>Pull</th>
             <th></th>
@@ -42,6 +45,9 @@ const ManageConnections = () => {
               key={`account-${account.id}`}
               account={account}
               currentUserId={currentUserId}
+              addRow={(mainAccount) =>
+                setAccounts(accounts.concat(mainAccount))
+              }
             />
           ))}
         </tbody>
