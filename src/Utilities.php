@@ -70,4 +70,17 @@ class Utilities {
 			return $line;
 		}, $results);
 	}
+
+	public function get_social_links_for_import() : array {
+		global $wpdb;
+
+		switch_to_blog( get_main_site_id() );
+
+		$link_table = $wpdb->prefix . AccountBlogLink::TABLE_NAME;
+		$link_ids   = $wpdb->get_col( "SELECT `id` FROM $link_table WHERE `can_pull` = 1" );
+
+		restore_current_blog();
+
+		return array_map( function( $id ) { return AccountBlogLink::find_by_id( $id ); }, $link_ids );
+	}
 }

@@ -14,6 +14,42 @@ class AccountBlogLink extends BaseModel {
 	public const TABLE_NAME = 'smolblog_social_blog_link';
 
 	/**
+	 * Returns an AccountBlogLink instance of the specified ID
+	 * or null if it does not exist.
+	 *
+	 * @param int $id ID of the AccountBlogLink row in the DB
+	 * @return AccountBlogLink|null AccountBlogLink object or null if not found
+	 */
+	public static function find_by_id( $id ) {
+		global $wpdb;
+		switch_to_blog( get_main_site_id() );
+		$tablename = $wpdb->prefix . self::TABLE_NAME;
+		restore_current_blog();
+
+		$db_result = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					`blog_id`,
+					`social_id`,
+					`additional_info`
+				FROM $tablename
+				WHERE `id` = %d", //phpcs:ignore
+				$id
+			), ARRAY_A
+		);
+
+		if ( $db_result ) {
+			return new AccountBlogLink(
+				$db_result['blog_id'],
+				$db_result['social_id'],
+				$db_result['additional_info']
+			);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Get the table name with the current WP prefix
 	 *
 	 * @return string
