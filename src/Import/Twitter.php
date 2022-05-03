@@ -10,6 +10,7 @@
 namespace Smolblog\Social\Import;
 
 use Smolblog\Social\Job\JobQueue;
+use Smolblog\Social\Model\SocialAccount;
 
 /**
  * Handle importing tweets from Twitter
@@ -23,23 +24,15 @@ class Twitter {
 	 * @return void
 	 */
 	public function import_twitter( $account_id, $twitter_max_id = false ) {
-		global $wpdb;
-
-		$table_name   = $wpdb->prefix . 'smolblog_social';
-		$account_info = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE id = %d", //phpcs:ignore
-				$account_id
-			)
-		);
+		$account = new SocialAccount( $account_id );
 
 		echo "Loading Twitter...\n";
 
 		$twitter_api_settings = [
 			'consumer_key'              => SMOLBLOG_TWITTER_APPLICATION_KEY,
 			'consumer_secret'           => SMOLBLOG_TWITTER_APPLICATION_SECRET,
-			'oauth_access_token'        => $account_info[0]->oauth_token,
-			'oauth_access_token_secret' => $account_info[0]->oauth_secret,
+			'oauth_access_token'        => $account->oauth_token,
+			'oauth_access_token_secret' => $account->oauth_secret,
 		];
 
 		$twitter = new \TwitterAPIExchange( $twitter_api_settings );

@@ -8,6 +8,7 @@
 
 namespace Smolblog\Social\Endpoint;
 
+use Smolblog\Social\Model\SocialAccount;
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
 use Tumblr\API\Client as TumblrClient;
 use \WP_REST_Request;
@@ -43,23 +44,12 @@ class TumblrCallback extends ApiEndpoint {
 	 * @return array Arguments for the endpoint
 	 */
 	protected function get_args() : array {
+		// No security check at this level;
+		// this needs to work outside of authenticated requests.
 		return [
-			'methods'             => [ 'POST', 'GET' ],
-			'permission_callback' => [ $this, 'is_user_logged_in' ],
+			'methods' => [ 'POST', 'GET' ],
+			'permission_callback' => '__return_true',
 		];
-	}
-
-	/**
-	 * Check if user is logged in; 'read' permissions are given
-	 * to Subscribers.
-	 *
-	 * @author Evan Hildreth <me@eph.me>
-	 * @since 0.1.0
-	 *
-	 * @return bool If current user has 'read' permissions.
-	 */
-	public function is_user_logged_in() {
-		return current_user_can( 'read' );
 	}
 
 	/**
@@ -72,15 +62,12 @@ class TumblrCallback extends ApiEndpoint {
 	 * @return void used as control structure only.
 	 */
 	public function run( WP_REST_Request $request = null ) {
-		global $wpdb;
-
-		if ( ! $request ) {
+		if ( ! $request || ! isset( $request['oauth_token'] ) ) {
 			return;
 		}
-		$current_user  = get_current_user_id();
-		$request_token = get_transient( 'smolblog_tumblr_oauth_request_' . $current_user );
+		$request_info = get_transient( 'smolblog_tumblr_' . $request['oauth_token'] );
 
-		if ( isset( $request['oauth_token'] ) && $request_token['oauth_token'] !== $request['oauth_token'] ) {
+		if ( $request_info === false ) {
 			wp_die(
 				'OAuth tokens did not match; <a href="' .
 				esc_attr( get_rest_url( null, 'smolblog/v1/tumblr/init' ) ) .
@@ -92,8 +79,8 @@ class TumblrCallback extends ApiEndpoint {
 		$client          = new TumblrClient(
 			SMOLBLOG_TUMBLR_APPLICATION_KEY,
 			SMOLBLOG_TUMBLR_APPLICATION_SECRET,
-			$request_token['oauth_token'],
-			$request_token['oauth_token_secret']
+			$request_info['oauth_token'],
+			$request_info['oauth_token_secret']
 		);
 		$request_handler = $client->getRequestHandler();
 		$request_handler->setBaseUrl( 'https://www.tumblr.com/' );
@@ -118,19 +105,17 @@ class TumblrCallback extends ApiEndpoint {
 		);
 		$user   = $client->getUserInfo()->user;
 
-		$wpdb->insert(
-			$wpdb->prefix . 'smolblog_social',
-			[
-				'user_id'         => $current_user,
-				'social_type'     => 'tumblr',
-				'social_username' => $user->name,
-				'oauth_token'     => $access_info['oauth_token'],
-				'oauth_secret'    => $access_info['oauth_token_secret'],
-			],
-			[ '%d', '%s', '%s', '%s', '%s' ],
-		);
+		$account = new SocialAccount();
 
-		header( 'Location: /wp-admin/admin.php?page=smolblog', true, 302 );
+		$account->user_id         = $request_info['user'];
+		$account->social_type     = 'tumblr';
+		$account->social_username = $user->name;
+		$account->oauth_token     = $access_info['oauth_token'];
+		$account->oauth_secret    = $access_info['oauth_token_secret'];
+
+		$account->save();
+
+		header( 'Location: ' . get_admin_url( $request_info['redirect_to'], 'admin.php?page=smolblog' ), true, 302 );
 		die;
 	}
 }

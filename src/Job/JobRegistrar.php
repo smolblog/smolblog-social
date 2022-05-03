@@ -12,6 +12,7 @@ namespace Smolblog\Social\Job;
 use WebDevStudios\OopsWP\Structure\Service;
 use Smolblog\Social\Import\Twitter;
 use Smolblog\Social\Import\Tumblr;
+use Smolblog\Social\Import\TimedRefresh;
 
 /**
  * Registrar class to register our custom post types
@@ -40,5 +41,6 @@ class JobRegistrar extends Service {
 
 		$queue->register_job( 'smolblog_import_twitter', [ ( new Twitter() ), 'import_twitter' ], 2 );
 		$queue->register_job( 'smolblog_import_tumblr', [ ( new Tumblr() ), 'import_tumblr' ], 3 );
+		$queue->register_job( 'smolblog_import_refresh', [ ( new TimedRefresh() ), 'run' ], 0 );
 	}
 }

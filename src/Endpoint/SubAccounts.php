@@ -1,6 +1,6 @@
 <?php
 /**
- * Endpoint for the Twitter OAuth Init
+ * Endpoint for getting the accounts for this user and blog
  *
  * @since 0.1.0
  * @package Smolblog\Social
@@ -9,15 +9,18 @@
 namespace Smolblog\Social\Endpoint;
 
 use WebDevStudios\OopsWP\Structure\Content\ApiEndpoint;
-use Abraham\TwitterOAuth\TwitterOAuth;
+use Smolblog\Social\Model\SocialAccount;
+use Tumblr\API\Client as TumblrClient;
+use \WP_Error;
 use \WP_REST_Request;
+use \WP_REST_Response;
 
 /**
  * Class to register our custom post types
  *
  * @since 0.1.0
  */
-class TwitterInit extends ApiEndpoint {
+class SubAccounts extends ApiEndpoint {
 	/**
 	 * Namespace for this endpoint
 	 *
@@ -32,7 +35,7 @@ class TwitterInit extends ApiEndpoint {
 	 * @since 2019-05-01
 	 * @var   string
 	 */
-	protected $route = '/twitter/init';
+	protected $route = '/accounts/(?P<id>[0-9]+)/subaccounts';
 
 	/**
 	 * Set up the arguments for this REST endpoint
@@ -44,7 +47,7 @@ class TwitterInit extends ApiEndpoint {
 	 */
 	protected function get_args() : array {
 		return [
-			'methods'             => [ 'POST', 'GET' ],
+			'methods'             => [ 'GET' ],
 			'permission_callback' => [ $this, 'is_user_logged_in' ],
 		];
 	}
@@ -76,31 +79,39 @@ class TwitterInit extends ApiEndpoint {
 			return;
 		}
 
+		$account = new SocialAccount($request['id']);
 		$current_user = get_current_user_id();
-		$current_blog = get_current_blog_id();
 
-		// We want the callback to go to the root site.
-		switch_to_blog( get_main_site_id() );
+		if ( $account->needs_save() || $account->user_id != $current_user ) {
+			return new WP_Error(
+				'not_found',
+				'The indicated social account was not found.',
+				[ 'status' => 404 ]
+			);
+		}
 
-		$callback_url = get_rest_url( null, 'smolblog/v1/twitter/callback' ) . '?_wpnonce=' . wp_create_nonce( 'wp_rest' );
-		$connection   = new TwitterOAuth( SMOLBLOG_TWITTER_APPLICATION_KEY, SMOLBLOG_TWITTER_APPLICATION_SECRET );
+		switch ( $account->social_type ) {
+			case 'tumblr':
+				$client = new TumblrClient(
+					SMOLBLOG_TUMBLR_APPLICATION_KEY,
+					SMOLBLOG_TUMBLR_APPLICATION_SECRET,
+					$account->oauth_token,
+					$account->oauth_secret
+				);
+				$blogs  = $client->getUserInfo()->user->blogs;
+				return new WP_REST_Response( array_map( function( $blog ) {
+					return [
+						'title' => $blog->title,
+						'name'  => $blog->name,
+						'url'   => $blog->url,
+					];
+				}, $blogs ) );
+		}
 
-		$request_token = $connection->oauth( 'oauth/request_token', array( 'oauth_callback' => $callback_url ) );
-
-		set_transient(
-			'smolblog_twitter_' . $request_token['oauth_token'],
-			[
-				'user'               => $current_user,
-				'redirect_to'        => $current_blog,
-				'oauth_token'        => $request_token['oauth_token'],
-				'oauth_token_secret' => $request_token['oauth_token_secret'],
-			],
-			5 * MINUTE_IN_SECONDS
+		return new WP_Error(
+			'not_found',
+			'This social account does not belong to a servie with subaccounts.',
+			[ 'status' => 404 ]
 		);
-
-		$url = $connection->url( 'oauth/authorize', array( 'oauth_token' => $request_token['oauth_token'] ) );
-
-		header( 'Location: ' . $url, true, 302 );
-		die;
 	}
 }

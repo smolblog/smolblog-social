@@ -16,6 +16,9 @@
 
 namespace Smolblog\Social;
 
+use Smolblog\Social\Database\Schema;
+use Smolblog\Social\Job\JobQueue;
+
 defined( 'ABSPATH' ) || die( 'Please do not.' );
 
 // Load composer libraries.
@@ -34,7 +37,9 @@ add_action(
 	'plugins_loaded',
 	function() {
 		try {
+			update_database();
 			( new SmolblogSocial( __FILE__ ) )->run();
+			check_cron();
 		} catch ( Error $e ) {
 			add_action(
 				'admin_notices',
@@ -51,10 +56,50 @@ add_action(
 	}
 );
 
-register_activation_hook(
-	__FILE__,
-	function() {
-		$db = new Database\Schema();
+/**
+ * Check the database version and update if needed.
+ */
+function update_database() {
+	if ( is_main_site() && get_option( 'smolblog_social_db_version', 0 ) !== Schema::DATABASE_VERSION ) {
+		$db = new Schema();
 		$db->create_social_table();
 	}
+}
+
+register_activation_hook( __FILE__, __NAMESPACE__ . '\update_database' );
+
+add_action(
+	'admin_enqueue_scripts',
+	function() {
+		// Register our script for enqueuing.
+		$smolblog_asset_info =
+		file_exists( plugin_dir_path( __FILE__ ) . 'build/main.asset.php' ) ?
+		require plugin_dir_path( __FILE__ ) . 'build/main.asset.php' :
+		[
+			'dependencies' => 'wp-element',
+			'version'      => filemtime( 'js/main.js' ),
+		];
+
+		wp_register_script(
+			'smolblog_admin',
+			plugin_dir_url( __FILE__ ) . 'build/main.js',
+			$smolblog_asset_info['dependencies'],
+			$smolblog_asset_info['version'],
+			true
+		);
+	},
+	1,
+	0
 );
+
+function check_cron() {
+	if ( ! is_main_site() ) {
+		return;
+	}
+
+	( new JobQueue() )->schedule_recurring_job(
+		strtotime( 'tomorrow' ),
+		DAY_IN_SECONDS,
+		'smolblog_import_refresh'
+	);
+}
