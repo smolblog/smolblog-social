@@ -71,7 +71,7 @@ class Utilities {
 		}, $results);
 	}
 
-	public function get_social_links_for_import() : array {
+	public static function get_social_links_for_import() : array {
 		global $wpdb;
 
 		switch_to_blog( get_main_site_id() );
