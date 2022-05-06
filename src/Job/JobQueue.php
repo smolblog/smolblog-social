@@ -33,15 +33,16 @@ class JobQueue {
 	 * @param boolean $reschedule If the job exists, pass true to reschedule. Default false.
 	 */
 	public function schedule_recurring_job( int $timestamp, int $interval, string $name, array $args = [], bool $reschedule = false ) {
-		if ( true === as_has_scheduled_action( $name, $args, 'smolblog' ) ) {
+		$next = wp_next_scheduled( $name, $args );
+		if ( false !== $next ) {
 			if ( ! $reschedule ) {
 				return;
 			}
 
-			as_unschedule_all_actions( $name, $args, 'smolblog' );
+			wp_unschedule_event( $next, $name, $args );
 		}
 
-		as_schedule_recurring_action( $timestamp, $interval, $name, $args, 'smolblog' );
+		wp_schedule_event( $timestamp, 'twicedaily', $name, $args );
 	}
 
 	/**
