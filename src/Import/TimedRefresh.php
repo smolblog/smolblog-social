@@ -32,7 +32,7 @@ class TimedRefresh {
 			}
 
 			$queue->enqueue_single_job(
-				'smolblog_import_' . $link->type,
+				'smolblog_import_' . $account->type,
 				$params
 			);
 
