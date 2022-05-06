@@ -33,7 +33,7 @@ class JobQueue {
 	 * @param boolean $reschedule If the job exists, pass true to reschedule. Default false.
 	 */
 	public function schedule_recurring_job( int $timestamp, int $interval, string $name, array $args = [], bool $reschedule = false ) {
-		if ( true === as_has_scheduled_action( $name ) ) {
+		if ( true === as_has_scheduled_action( $name, $args, 'smolblog' ) ) {
 			if ( ! $reschedule ) {
 				return;
 			}
