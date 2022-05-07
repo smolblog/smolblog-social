@@ -28,11 +28,11 @@ class TimedRefresh {
 
 			$params = [ $link->social_id ];
 			if ( $link->additional_info ) {
-				$params[] = $link->additional_info;
+				$params[] = wp_parse_url( $link->additional_info, PHP_URL_HOST );
 			}
 
 			$queue->enqueue_single_job(
-				'smolblog_import_' . $account->type,
+				'smolblog_import_' . $account->social_type,
 				$params
 			);
 
